@@ -74,6 +74,8 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
  .fields{grid-template-columns:1fr 1fr}.history-row{grid-template-columns:1fr;gap:3px}
 }
 @media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}.topic .zh{font-size:14px}.topic .en{font-size:16px}}
+
+.status-summary{margin-top:10px;padding-top:8px;border-top:1px solid #31566b;font-size:14px;line-height:1.8}.status-summary strong{display:block;margin-bottom:3px}.status-summary-lines div{margin:0}.therapy-grid{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:8px;margin:10px 0}.therapy-card{border:1px solid #356078;border-radius:8px;padding:10px;background:#10202c}.therapy-card label{display:flex;align-items:center;gap:6px;font-weight:700}.therapy-card .therapy-dates{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}.therapy-card .therapy-end-wrap.hidden{display:none}.therapy-tags{display:flex;flex-direction:column;gap:4px}.therapy-tag{font-size:12px;font-weight:700;color:#ffdb62}.therapy-tag span{display:inline-block;padding:2px 6px;margin-right:4px;border-radius:3px;background:#9b2430;color:#fff}.history-row{align-items:start}.closure-note{font-size:12px;color:var(--muted)}@media(max-width:700px){.therapy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -89,7 +91,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
     <div class="rule"></div>
     <nav class="grid" aria-label="六大主題">
       <button class="topic" data-topic="patients"><span class="ico">♧</span><div class="zh">病人清單</div><div class="en">PT List</div></button>
-      <button class="topic" data-topic="ventilator"><span class="ico">≋</span><div class="zh">呼吸器照護</div><div class="en">Ventilator</div></button>
+      <button class="topic" data-topic="ventilator"><span class="ico">≋</span><div class="zh">呼吸器使用病人紀錄表</div><div class="en">Patient Respirator Record</div></button>
       <button class="topic" data-topic="maintenance"><span class="ico">▣</span><div class="zh">儀器管理</div><div class="en">Maintenance</div></button>
       <button class="topic" data-topic="handover"><span class="ico">▤</span><div class="zh">交班工作</div><div class="en">Handover</div></button>
       <button class="topic" data-topic="duty"><span class="ico">☷</span><div class="zh">值班紀錄</div><div class="en">Duty Log</div></button>
@@ -118,10 +120,20 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
           <div class="patient-list" id="patientList"><div class="empty">請先選擇單位分類與照護單位</div></div>
           <p class="notice">DEMO 虛構資料｜不可用於真實病人照護或臨床決策。</p>
         </section>
-        <section class="detail" id="patientDetail">
-          <div class="empty">選擇左側病人後，這裡會顯示病人收案資料。</div>
-        </section>
       </div>
+    </section>
+
+    <section id="ventilatorSection" class="hidden">
+      <div class="workspace-head">
+        <div>
+          <h3>呼吸器使用病人紀錄表</h3>
+          <p class="hint">病人收案資料、VPN／呼吸重卡狀態與呼吸器使用歷程集中於此。</p>
+        </div>
+        <button class="secondary" id="backToPatientsFromRecord">返回 PT List</button>
+      </div>
+      <section class="detail" id="patientDetail">
+        <div class="empty">請先從 PT List 選擇病人。</div>
+      </section>
     </section>
 
     <section id="placeholderSection" class="hidden">
@@ -190,15 +202,14 @@ function renderPatients(){
  const root=$("patientList");root.innerHTML="";
  if(!category&&!unitCode&&!q){
   root.innerHTML='<div class="empty">請選擇單位分類／照護單位，或直接輸入姓名、病歷號、床號進行全院搜尋。</div>';
-  $("patientDetail").innerHTML='<div class="empty">搜尋結果選取後，病人收案資料會顯示於此。</div>';return;
+  return;
  }
- if(!list.length){root.innerHTML='<div class="empty">此條件沒有符合的虛擬病人</div>';$("patientDetail").innerHTML='<div class="empty">請調整搜尋條件。</div>';return;}
+ if(!list.length){root.innerHTML='<div class="empty">此條件沒有符合的虛擬病人</div>';return;}
  list.forEach(p=>{
   const b=document.createElement("button");b.className="patient-btn"+(p.id===selectedPatientId?" active":"");b.type="button";
   b.innerHTML="<strong></strong><small></small>";b.querySelector("strong").textContent=p.name;b.querySelector("small").textContent=p.bed+" · "+p.mrn;
-  b.addEventListener("click",()=>{selectedPatientId=p.id;renderPatients();renderDetail(p);});root.appendChild(b);
+  b.addEventListener("click",()=>{selectedPatientId=p.id;renderPatients();renderDetail(p);openTopic("ventilator");});root.appendChild(b);
  });
- const selected=list.find(p=>p.id===selectedPatientId)||list[0];selectedPatientId=selected.id;renderDetail(selected);
 }
 function field(label,value){return '<div class="field"><span>'+label+'</span><strong>'+String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</strong></div>';}
 function ventilatorDays(p){
@@ -209,100 +220,174 @@ function ventilatorDays(p){
  if(start>today)return 0;
  return Math.floor((today-start)/86400000)+1;
 }
+function formatStatusDate(date){
+ if(!date)return "";
+ const m=String(date).match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+ return m?m[1]+"/"+m[2]+"/"+m[3]:String(date);
+}
+function renderStatusSummary(p){
+ const lines=[];
+ (p.vpnHistory||[]).forEach(item=>{
+  if(item.status && item.status!=="無VPN") lines.push({date:item.date||"",text:item.status==="入VPN"?"入 VPN":item.status==="有VPN"?"有 VPN":item.status});
+ });
+ (p.ventilatorCardHistory||[]).forEach(item=>{
+  if(!item.status || item.status==="無重卡")return;
+  const names={"待送重卡":"呼吸器重卡－待送出","送出重卡":"呼吸器重卡－送出","有重卡":"呼吸器重卡－有","hold送重卡":"呼吸器重卡－Hold 送出"};
+  lines.push({date:item.date||"",text:(names[item.status]||("呼吸器重卡－"+item.status))+(item.reason?"（"+item.reason+"）":"")});
+ });
+ // Keep newest entries at the bottom as a chronological plain-text log.
+ lines.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ return lines.length?lines.map(item=>'<div>'+escapeHtml(item.text)+'：'+escapeHtml(formatStatusDate(item.date))+'</div>').join(""):'<div>尚無已儲存的狀態紀錄。</div>';
+}
 function renderDetail(p){
  const days=ventilatorDays(p),warnings=[];
- if(days!==null&&days>21)warnings.push("準備送重卡");
- if(days!==null&&days>14)warnings.push("請輸入VPN");
+ const vpnText=String(p.vpnStatus||"無VPN");
+ const cardText=String(p.ventilatorCardStatus||"無重卡");
+ const vpnDone=/已完成|有VPN|完成/i.test(vpnText);
+ const cardDone=/已完成|有重卡|完成/i.test(cardText);
+ if(days!==null&&days>=21&&!cardDone)warnings.push("符合申請呼吸器重卡條件");
+ if(days!==null&&days>=14&&!vpnDone)warnings.push("請入 VPN");
+ const unitOptions=unitGroups.flatMap(g=>g.units.map(u=>({category:g.category,name:u.name,code:u.code})));
  $("patientDetail").innerHTML=
-  '<h3>'+escapeHtml(p.name)+'</h3><div class="subid">'+escapeHtml(p.mrn)+'</div><div class="fields">'+
-  field("單位分類",p.category)+field("單位名稱 / 代碼",p.unit+" · "+p.unitCode)+
-  field("測試床號",p.bed)+field("收案日期",p.admissionDate)+
-  field("姓名 / 測試年齡",p.name+" / "+p.age)+field("性別",p.sex)+
-  field("診斷 / 收案原因",p.diagnosis)+field("開始使用 MV 日期",p.mvStart)+
-  field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+
-  field("收案人",p.collector)+field("VPN 狀態",(p.vpnStatus||"無VPN")+(p.vpnDate?"｜"+p.vpnDate:""))+
-  field("呼吸器重卡",(p.ventilatorCardStatus||"無重卡")+(p.ventilatorCardExpiry?"｜日期："+p.ventilatorCardExpiry:"")+(p.cardHoldReason?"｜原因："+(p.cardHoldReason==="其他"?(p.cardHoldCustom||"其他"):p.cardHoldReason):""))+
-  '</div>'+(warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">呼吸器使用天數未達提醒門檻。</div>')+
-  '<div class="editable-field"><strong>VPN 狀態設定</strong><div class="fields">'+
+  '<h3>'+escapeHtml(p.name)+'</h3><div class="subid">'+escapeHtml(p.mrn)+'</div>'+
+  '<div class="editable-field"><strong>病人收案資料（可編輯）</strong>'+
+  '<div class="fields">'+
+  '<div><label for="editUnit">單位名稱</label><select id="editUnit">'+unitOptions.map(u=>'<option value="'+escapeHtml(u.code)+'" '+(u.code===p.unitCode?'selected':'')+'>'+escapeHtml(u.name)+'（'+escapeHtml(u.code)+'）</option>').join("")+'</select></div>'+
+  '<div><label for="editBed">床號</label><input id="editBed" type="text" value="'+escapeHtml(p.bed||"")+'" placeholder="請輸入床號"></div>'+
+  '<div><label for="editName">姓名</label><input id="editName" type="text" value="'+escapeHtml(p.name||"")+'" placeholder="請輸入姓名"></div>'+
+  '<div><label for="editSex">性別</label><select id="editSex"><option value="">請選擇</option><option '+(p.sex==="男"?"selected":"")+' value="男">男</option><option '+(p.sex==="女"?"selected":"")+' value="女">女</option><option '+(p.sex==="未設定"?"selected":"")+' value="未設定">未設定</option></select></div>'+
+  '<div><label for="editDob">出生年月日</label><input id="editDob" type="date" value="'+escapeHtml(p.dob||"")+'"></div>'+
+  '<div><label for="editAge">姓名／年齡（整數歲，自動計算）</label><input id="editAge" type="text" readonly value="'+(p.dob?calculateAge(p.dob):escapeHtml(p.age||""))+'"></div>'+
+  '<div><label for="editDiagnosis">診斷／收案原因</label><input id="editDiagnosis" type="text" value="'+escapeHtml(p.diagnosis||"")+'" placeholder="請輸入診斷"></div>'+
+  '<div><label for="editMvStart">開始使用呼吸器日期</label><input id="editMvStart" type="date" value="'+(/^\\d{4}-\\d{2}-\\d{2}$/.test(p.mvStart||"")?p.mvStart:"")+'"></div>'+
+  '</div><button class="primary" id="savePatientBasics" type="button">儲存病人資料</button></div>'+
+  '<div class="fields">'+field("單位分類",p.category)+field("病歷號／測試編號",p.mrn)+field("收案日期",p.admissionDate)+field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+field("收案人",p.collector)+'</div>'+
+  '<div class="status-summary"><strong>VPN 與呼吸器重卡歷程</strong><div class="status-summary-lines">'+renderStatusSummary(p)+'</div></div>'+
+  (warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">目前沒有達到未完成項目的提醒門檻。</div>')+
+  '<div class="editable-field"><strong>VPN 狀態</strong><div class="fields">'+
   '<div><label for="vpnStatusInput">VPN 狀態</label><select id="vpnStatusInput"><option value="無VPN">無VPN</option><option value="入VPN">入VPN</option><option value="有VPN">有VPN</option></select></div>'+
   '<div id="vpnDateWrap" class="'+((p.vpnStatus==="入VPN"||p.vpnStatus==="有VPN")?"":"hidden")+'"><label for="vpnDateInput">VPN 日期</label><input id="vpnDateInput" type="date" value="'+escapeHtml(p.vpnDate||"")+'"></div>'+
-  '</div><button class="primary" id="saveVpn">儲存 VPN 狀態</button></div>'+
-  '<div class="editable-field"><strong>呼吸器重卡設定</strong><div class="fields">'+
+  '</div><button class="primary" id="saveVpn" type="button">儲存 VPN 狀態</button></div>'+
+  '<div class="editable-field"><strong>呼吸器重卡狀態</strong><div class="fields">'+
   '<div><label for="cardStatusInput">呼吸器重卡</label><select id="cardStatusInput"><option value="無重卡">無重卡</option><option value="待送重卡">待送重卡</option><option value="送出重卡">送出重卡</option><option value="有重卡">有重卡</option><option value="hold送重卡">hold送重卡</option></select></div>'+
-  '<div id="cardDateWrap" class="'+((p.ventilatorCardStatus==="送出重卡"||p.ventilatorCardStatus==="有重卡")?"":"hidden")+'"><label for="cardExpiryInput">'+(p.ventilatorCardStatus==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）")+'</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div>'+
+  '<div id="cardDateWrap" class="'+((p.ventilatorCardStatus==="送出重卡"||p.ventilatorCardStatus==="有重卡")?"":"hidden")+'"><label for="cardExpiryInput">'+(p.ventilatorCardStatus==="有重卡"?"重卡到期日":"送出重卡日期")+'</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div>'+
   '<div id="cardHoldWrap" class="'+(p.ventilatorCardStatus==="hold送重卡"?"":"hidden")+'"><label for="cardHoldReason">hold 原因</label><select id="cardHoldReason"><option value="">請選擇原因</option><option value="等證件或回復">等證件或回復</option><option value="醫療因素">醫療因素</option><option value="其他">其他（請輸入原因）</option></select><input id="cardHoldCustom" class="'+(p.cardHoldReason==="其他"?"":"hidden")+'" type="text" placeholder="請輸入 hold 原因" value="'+escapeHtml(p.cardHoldCustom||"")+'"></div>'+
-  '</div><button class="primary" id="saveCard">儲存重卡狀態</button></div>'+
-  '<div class="actions"><button class="primary" id="showHistory">查看呼吸器使用歷程 ('+p.history.length+')</button><button class="secondary" id="newHistory">新增歷程</button></div><p class="notice">本頁只使用虛構測試資料；尚未連接 SharePoint。呼吸器使用天數依開始日期計算，開始當日算第 1 天。</p><div id="historyArea" class="history hidden"></div>';
+  '</div><button class="primary" id="saveCard" type="button">儲存重卡狀態</button></div>'+
+  '<div class="editable-field"><strong>呼吸器使用歷程</strong><p class="hint">請填寫通氣方式、開始日期、結束日期；尚未結束可勾選「使用中」。新增後會列在下方，可編輯或刪除。</p>'+
+  '<div class="fields">'+
+  '<div><label for="histMode">通氣方式</label><select id="histMode"><option value="">請選擇</option><option>ETT-MV</option><option>Tr-MV</option><option>Tr-BiPAP</option><option>NIPPV</option><option>HFOT</option><option>其他</option></select></div>'+
+  '<div><label for="histStart">開始日期</label><input id="histStart" type="date"></div>'+
+  '<div><label for="histEnd">結束日期</label><input id="histEnd" type="date"></div>'+
+  '<div><label for="histNote">備註</label><input id="histNote" type="text" placeholder="可留空"></div>'+
+  '<div><label><input id="histOngoing" type="checkbox" checked> 使用中（尚未結束）</label></div>'+
+  '</div><button class="primary" id="addHistoryInline" type="button">新增呼吸器使用歷程</button></div>'+
+  '<div class="editable-field"><strong>使用其他輔助治療（可複選）</strong><p class="hint">勾選後請輸入開始日期；iNO、HFOV、Prone、ECMO 可輸入結束日期；Surfactant 不需要結束日期。</p>'+
+  '<div class="therapy-grid">'+['iNO','HFOV','Prone position','ECMO','Surfactant'].map(t=>'<div class="therapy-card" data-therapy="'+t+'"><label><input type="checkbox" class="therapy-check" value="'+t+'"> '+t+'</label><div class="fields therapy-dates hidden"><div><label>開始日期</label><input type="date" class="therapy-start"></div><div class="therapy-end-wrap"><label>結束日期</label><input type="date" class="therapy-end"></div></div></div>').join('')+'</div>'+
+  '<button class="primary" id="saveTherapies" type="button">儲存輔助治療</button></div>'+
+  '<div class="editable-field"><strong>結束與後續照顧</strong><div class="fields">'+
+  '<div><label for="closureMvEnd">呼吸器結束日期</label><input id="closureMvEnd" type="date" value="'+escapeHtml((p.closure&&p.closure.mvEnd)||'')+'"></div>'+
+  '<div><label>氣管切開</label><select id="closureTracheostomy"><option value="">請選擇</option><option>0. 沒有</option><option>1. 原已氣切</option><option>2. 此次住院氣切</option></select></div>'+
+  '<div><label>後續照顧</label><select id="closureFollowup"><option value="">請選擇</option><option>1. 成功脫離呼吸器轉至一般病房</option><option>2. 使用呼吸器轉醫院</option><option>3. 使用呼吸器轉居家照護</option><option>4. 死亡</option><option>5. AMA</option><option>6. Withdrawal</option><option>7. Other</option></select></div>'+
+  '<div><label for="closureFollowupOther">其他後續照顧說明</label><input id="closureFollowupOther" type="text" placeholder="如選 Other，請輸入說明" value="'+escapeHtml((p.closure&&p.closure.followupOther)||'')+'"></div>'+
+  '<div><label for="closureDate">結案日期</label><input id="closureDate" type="date" value="'+escapeHtml((p.closure&&p.closure.date)||'')+'"></div>'+
+  '</div><button class="primary" id="saveClosure" type="button">儲存結案資料</button></div>'+
+  '<div class="actions"><button class="secondary" id="showHistory" type="button">顯示歷程清單 ('+p.history.length+')</button></div>'+
+  '<div id="historyArea" class="history"></div><p class="notice">本頁將收案、呼吸器歷程、輔助治療及結案整合於同一頁，不再拆成 REDCap 五個分頁。本機示範資料尚未連接 SharePoint。</p>';
  $("vpnStatusInput").value=p.vpnStatus||"無VPN";
  $("cardStatusInput").value=p.ventilatorCardStatus||"無重卡";
- if((p.vpnStatus==="入VPN"||p.vpnStatus==="有VPN")&&!p.vpnDate)p.vpnDate=new Date().toISOString().slice(0,10);
- if($("cardHoldReason")){
-  $("cardHoldReason").value=p.cardHoldReason||"";
-  $("cardHoldCustom").classList.toggle("hidden",$("cardHoldReason").value!=="其他");
-  $("cardHoldCustom").disabled=false;
-  $("cardHoldCustom").readOnly=false;
- }
- function setTodayOnEnter(input){
-  if(!input)return;
-  input.addEventListener("keydown",event=>{
-   if(event.key==="Enter"){
-    event.preventDefault();
-    if(!input.value)input.value=new Date().toISOString().slice(0,10);
-   }
-  });
- }
- setTodayOnEnter($("vpnDateInput"));
- setTodayOnEnter($("cardExpiryInput"));
+ const dobInput=$("editDob");
+ dobInput.addEventListener("change",()=>{$("editAge").value=dobInput.value?calculateAge(dobInput.value):"";});
+ $("savePatientBasics").addEventListener("click",()=>{
+  const unit=unitOptions.find(u=>u.code===$("editUnit").value);
+  const name=$("editName").value.trim(),bed=$("editBed").value.trim(),sex=$("editSex").value,diagnosis=$("editDiagnosis").value.trim(),dob=$("editDob").value,mvStart=$("editMvStart").value;
+  if(!unit){alert("請選擇單位名稱。");return;}
+  if(!bed){alert("請輸入床號。");$("editBed").focus();return;}
+  if(!name){alert("請輸入姓名。");$("editName").focus();return;}
+  if(!sex){alert("請選擇性別。");$("editSex").focus();return;}
+  if(dob&&dob>new Date().toISOString().slice(0,10)){alert("出生年月日不可晚於今天。");return;}
+  p.category=unit.category;p.unit=unit.name;p.unitCode=unit.code;p.bed=bed;p.name=name;p.sex=sex;p.dob=dob;p.age=dob?calculateAge(dob):p.age;p.diagnosis=diagnosis;p.mvStart=mvStart||"尚未登錄";
+  saveDemoData();renderPatients();renderDetail(p);alert("病人資料已儲存（目前儲存於此瀏覽器的示範資料）。");
+ });
  $("vpnStatusInput").addEventListener("change",()=>{
-  const status=$("vpnStatusInput").value;
-  const needsDate=(status==="入VPN"||status==="有VPN");
+  const status=$("vpnStatusInput").value,needsDate=(status==="入VPN"||status==="有VPN");
   $("vpnDateWrap").classList.toggle("hidden",!needsDate);
-  const dateInput=$("vpnDateInput");
-  if(needsDate&&dateInput&&!dateInput.value)dateInput.value=new Date().toISOString().slice(0,10);
+  if(needsDate&&!$("vpnDateInput").value)$("vpnDateInput").value=new Date().toISOString().slice(0,10);
  });
  $("cardStatusInput").addEventListener("change",()=>{
-  const status=$("cardStatusInput").value;
-  const needsDate=(status==="送出重卡"||status==="有重卡");
-  $("cardDateWrap").classList.toggle("hidden",!needsDate);
-  $("cardHoldWrap").classList.toggle("hidden",status!=="hold送重卡");
-  const dateInput=$("cardExpiryInput");
-  if(needsDate&&dateInput&&!dateInput.value)dateInput.value=new Date().toISOString().slice(0,10);
-  const label=$("cardDateWrap").querySelector("label");
-  if(label)label.textContent=status==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）";
+  const status=$("cardStatusInput").value,needsDate=(status==="送出重卡"||status==="有重卡");
+  $("cardDateWrap").classList.toggle("hidden",!needsDate);$("cardHoldWrap").classList.toggle("hidden",status!=="hold送重卡");
+  const label=$("cardDateWrap").querySelector("label");if(label)label.textContent=status==="有重卡"?"重卡到期日":"送出重卡日期";
  });
- $("cardHoldReason").addEventListener("change",()=>{
-  const isOther=$("cardHoldReason").value==="其他";
-  $("cardHoldCustom").classList.toggle("hidden",!isOther);
-  $("cardHoldCustom").disabled=false;
-  $("cardHoldCustom").readOnly=false;
-  if(isOther)$("cardHoldCustom").focus();
- });
+ $("cardHoldReason").addEventListener("change",()=>{$("cardHoldCustom").classList.toggle("hidden",$("cardHoldReason").value!=="其他");});
  $("saveVpn").addEventListener("click",()=>{
-  const status=$("vpnStatusInput").value,date=$("vpnDateInput")?.value||"";
-  if((status==="入VPN"||status==="有VPN")&&!date){alert("選擇「入VPN」或「有VPN」時，請輸入日期。");return;}
-  p.vpnStatus=status;p.vpnDate=status==="無VPN"?"":date;renderDetail(p);
+  const status=$("vpnStatusInput").value,date=$("vpnDateInput").value;
+  if((status==="入VPN"||status==="有VPN")&&!date){alert("請輸入 VPN 日期。");return;}
+  p.vpnHistory=p.vpnHistory||[];
+  const savedDate=date||new Date().toISOString().slice(0,10);
+  if(status!=="無VPN")p.vpnHistory.push({status,date:savedDate});
+  p.vpnStatus=status;p.vpnDate=status==="無VPN"?"":date;saveDemoData();renderDetail(p);
  });
  $("saveCard").addEventListener("click",()=>{
-  const status=$("cardStatusInput").value,date=$("cardExpiryInput")?.value||"";
-  const reason=$("cardHoldReason")?.value||"",custom=$("cardHoldCustom")?.value.trim()||"";
-  if((status==="送出重卡"||status==="有重卡")&&!date){alert("選擇「送出重卡」或「有重卡」時，必須輸入日期。");return;}
-  if(status==="hold送重卡"&&!reason){alert("選擇「hold送重卡」時，必須選擇 hold 原因。");return;}
-  if(status==="hold送重卡"&&reason==="其他"&&!custom){alert("請輸入 hold 原因。");$("cardHoldCustom").focus();return;}
-  p.ventilatorCardStatus=status;
-  p.ventilatorCardExpiry=(status==="送出重卡"||status==="有重卡")?date:"";
-  p.cardHoldReason=status==="hold送重卡"?reason:"";
-  p.cardHoldCustom=(status==="hold送重卡"&&reason==="其他")?custom:"";
-  renderDetail(p);
+  const status=$("cardStatusInput").value,date=$("cardExpiryInput").value,reason=$("cardHoldReason").value,custom=$("cardHoldCustom").value.trim();
+  if((status==="送出重卡"||status==="有重卡")&&!date){alert("請輸入重卡日期。");return;}
+  if(status==="hold送重卡"&&!reason){alert("請選擇 hold 原因。");return;}
+  if(status==="hold送重卡"&&reason==="其他"&&!custom){alert("請輸入 hold 原因。");return;}
+  p.ventilatorCardHistory=p.ventilatorCardHistory||[];
+  if(status!=="無重卡")p.ventilatorCardHistory.push({status,date:date||new Date().toISOString().slice(0,10),reason:status==="hold送重卡"?(reason==="其他"?custom:reason):""});
+  p.ventilatorCardStatus=status;p.ventilatorCardExpiry=(status==="送出重卡"||status==="有重卡")?date:"";p.cardHoldReason=status==="hold送重卡"?reason:"";p.cardHoldCustom=(status==="hold送重卡"&&reason==="其他")?custom:"";saveDemoData();renderDetail(p);
  });
- $("showHistory").addEventListener("click",()=>renderHistory(p));$("newHistory").addEventListener("click",()=>addHistory(p));
+ // Restore and wire integrated auxiliary-therapy fields
+ if(!p.supportTherapies)p.supportTherapies=[];
+ document.querySelectorAll('.therapy-card').forEach(card=>{
+  const name=card.dataset.therapy,existing=p.supportTherapies.find(t=>t.name===name),check=card.querySelector('.therapy-check'),dates=card.querySelector('.therapy-dates'),start=card.querySelector('.therapy-start'),end=card.querySelector('.therapy-end'),endWrap=card.querySelector('.therapy-end-wrap');
+  if(existing){check.checked=true;start.value=existing.start||'';if(end)end.value=existing.end||'';}
+  if(name==='Surfactant')endWrap.classList.add('hidden');
+  dates.classList.toggle('hidden',!check.checked);
+  check.addEventListener('change',()=>dates.classList.toggle('hidden',!check.checked));
+ });
+ $("saveTherapies").addEventListener('click',()=>{
+  const next=[];let invalid='';document.querySelectorAll('.therapy-card').forEach(card=>{const check=card.querySelector('.therapy-check');if(!check.checked)return;const name=card.dataset.therapy,start=card.querySelector('.therapy-start').value,end=card.querySelector('.therapy-end').value;if(!start){invalid=name+'：請輸入開始日期';return;}if(name!=='Surfactant'&&!end){invalid=name+'：請輸入結束日期';return;}if(name!=='Surfactant'&&end<start){invalid=name+'：結束日期不可早於開始日期';return;}next.push({name,start,end:name==='Surfactant'?'':end});});
+  if(invalid){alert(invalid);return;}p.supportTherapies=next;saveDemoData();renderDetail(p);alert('輔助治療已儲存。');
+ });
+ $("closureTracheostomy").value=(p.closure&&p.closure.tracheostomy)||'';$("closureFollowup").value=(p.closure&&p.closure.followup)||'';
+ $("saveClosure").addEventListener('click',()=>{p.closure={mvEnd:$("closureMvEnd").value,tracheostomy:$("closureTracheostomy").value,followup:$("closureFollowup").value,followupOther:$("closureFollowupOther").value.trim(),date:$("closureDate").value};saveDemoData();alert('結束與後續照顧資料已儲存。');});
+ $("histOngoing").addEventListener("change",()=>{$("histEnd").disabled=$("histOngoing").checked; if($("histOngoing").checked)$("histEnd").value="";});
+ $("histEnd").disabled=true;$("histStart").value=p.mvStart&&/^\\d{4}-\\d{2}-\\d{2}$/.test(p.mvStart)?p.mvStart:new Date().toISOString().slice(0,10);
+ $("addHistoryInline").addEventListener("click",()=>{
+  const mode=$("histMode").value,startDate=$("histStart").value,ongoing=$("histOngoing").checked,endDate=ongoing?"使用中":$("histEnd").value,note=$("histNote").value.trim();
+  if(!mode){alert("請選擇通氣方式。");return;}if(!startDate){alert("請選擇開始日期。");return;}if(!ongoing&&!endDate){alert("請選擇結束日期，或勾選使用中。");return;}if(!ongoing&&endDate<startDate){alert("結束日期不可早於開始日期。");return;}
+  const record={id:makeHistoryId(),mode,start:startDate,end:endDate,note};p.history.push(record);recordHistoryAudit("CREATE",p,record.id,null,record);saveDemoData();renderDetail(p);$("historyArea").classList.remove("hidden");renderHistory(p);
+ });
+ $("showHistory").addEventListener("click",()=>{renderHistory(p);$("historyArea").classList.remove("hidden");});
+ $("cardHoldReason").value=p.cardHoldReason||"";
+ $("cardHoldCustom").classList.toggle("hidden",$("cardHoldReason").value!=="其他");
+ renderHistory(p);
+}
+function calculateAge(dob){
+ if(!dob)return "";
+ const birth=new Date(dob+"T00:00:00"),today=new Date();
+ let age=today.getFullYear()-birth.getFullYear();
+ if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))age--;
+ return Math.max(0,age);
+}
+function saveDemoData(){
+ try{localStorage.setItem("rtClinicalWorkspaceDemoPatients",JSON.stringify(patients));}catch(e){}
+}
+function loadDemoData(){
+ try{
+  const raw=localStorage.getItem("rtClinicalWorkspaceDemoPatients");
+  if(!raw)return;
+  const saved=JSON.parse(raw);
+  if(Array.isArray(saved))saved.forEach(sp=>{const p=patients.find(x=>x.id===sp.id);if(p)Object.assign(p,sp);});
+ }catch(e){}
 }
 function renderHistory(p){
  p.history.forEach(h=>{if(!h.id)h.id=makeHistoryId();});
  const area=$("historyArea");area.classList.remove("hidden");
  const show=$("showHistory");if(show)show.textContent="查看呼吸器使用歷程 ("+p.history.length+")";
  if(!p.history.length){area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><div class="empty">目前沒有呼吸器歷程，請按「新增歷程」。</div>';return;}
- area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><p class="hint">每筆紀錄有獨立 ID。HFNC、BiPAP 等支持方式可有重疊日期；編輯只更新所選 ID。</p>'+
- p.history.map(h=>'<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.2fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">ID：'+escapeHtml(h.id)+'</div></div><div>'+escapeHtml(h.start)+' → '+escapeHtml(h.end)+'</div><div>'+escapeHtml(h.note||"—")+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div></div>').join("");
+ area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><p class="hint">輔助治療會依日期重疊顯示在該筆呼吸器歷程右側；Surfactant 僅顯示開始日期。</p>'+
+ p.history.map(h=>{const hs=h.start,he=h.end==='使用中'?'9999-12-31':h.end;const tags=(p.supportTherapies||[]).filter(t=>t.start<=he&&(t.name==='Surfactant'||(t.end||'9999-12-31')>=hs)).map(t=>'<div class="therapy-tag"><span>'+escapeHtml(t.name==='Prone position'?'Prone':t.name)+'</span>'+escapeHtml(t.start.slice(5).replace('-','/'))+(t.name==='Surfactant'?'':'–'+escapeHtml((t.end||'').slice(5).replace('-','/')) )+'</div>').join('');return '<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(110px,.8fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">ID：'+escapeHtml(h.id)+'</div></div><div>'+escapeHtml(h.start)+' → '+escapeHtml(h.end)+'</div><div>'+escapeHtml(h.note||'—')+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div><div class="therapy-tags">'+(tags||'<span class="hint">—</span>')+'</div></div>';}).join("");
  area.querySelectorAll(".edit-history").forEach(btn=>btn.addEventListener("click",()=>editHistory(p,btn.dataset.historyId)));
  area.querySelectorAll(".delete-history").forEach(btn=>btn.addEventListener("click",()=>deleteHistory(p,btn.dataset.historyId)));
 }
@@ -320,30 +405,23 @@ function editHistory(p,historyId){
  if(cleanEnd!=="使用中"&&!datePattern.test(cleanEnd)){alert("結束日期請使用 YYYY-MM-DD 或「使用中」。");return;}
  if(cleanEnd!=="使用中"&&cleanEnd<cleanStart){alert("結束日期不可早於開始日期。");return;}
  const after={...record,mode:mode.trim(),start:cleanStart,end:cleanEnd,note:note.trim()};
- p.history[index]=after;recordHistoryAudit("EDIT",p,historyId,before,after);renderHistory(p);
+ p.history[index]=after;recordHistoryAudit("EDIT",p,historyId,before,after);saveDemoData();renderHistory(p);
 }
 function deleteHistory(p,historyId){
  const index=p.history.findIndex(h=>h.id===historyId);
  if(index<0){alert("找不到這筆歷程，請重新整理後再試。");return;}
  const record=p.history[index];
  if(!confirm("確定要刪除這筆呼吸器歷程嗎？\\nID："+record.id+"\\n"+record.mode+"｜"+record.start+" → "+record.end+"\\n\\n此操作會從目前的示範畫面移除該筆紀錄。"))return;
- const before={...record};p.history.splice(index,1);recordHistoryAudit("DELETE",p,historyId,before,null);renderHistory(p);
+ const before={...record};p.history.splice(index,1);recordHistoryAudit("DELETE",p,historyId,before,null);saveDemoData();renderHistory(p);
 }
 function addHistory(p){
- const mode=prompt("請輸入通氣方式（例如 HFNC、BiPAP、Tr-BiPAP、ETT-MV）：");if(!mode||!mode.trim())return;
- const start=prompt("開始日期（YYYY-MM-DD）：",new Date().toISOString().slice(0,10));if(!start)return;
- const end=prompt("結束日期（YYYY-MM-DD）；尚未結束請填「使用中」：","使用中");if(!end)return;
- const note=prompt("備註（可留空）：","")||"";
- const cleanStart=start.trim(),cleanEnd=end.trim(),datePattern=/^\\d{4}-\\d{2}-\\d{2}$/;
- if(!datePattern.test(cleanStart)){alert("開始日期格式請使用 YYYY-MM-DD。");return;}
- if(cleanEnd!=="使用中"&&!datePattern.test(cleanEnd)){alert("結束日期請使用 YYYY-MM-DD 或「使用中」。");return;}
- if(cleanEnd!=="使用中"&&cleanEnd<cleanStart){alert("結束日期不可早於開始日期。");return;}
- const record={id:makeHistoryId(),mode:mode.trim(),start:cleanStart,end:cleanEnd,note:note.trim()};
- p.history.push(record);recordHistoryAudit("CREATE",p,record.id,null,record);renderHistory(p);
+ renderDetail(p);
+ $("histMode").focus();
+ $("historyArea").classList.remove("hidden");
 }
 const topics={
  patients:{title:"病人清單 · PT List",text:"依照護單位篩選虛擬病人，查看收案主檔。"},
- ventilator:{title:"呼吸器照護 · Ventilator",text:"此主題預留呼吸器使用病人管理與累加式呼吸照護歷程。請先從「病人清單」選取病人，後續版本將在此整合病人歷程。"},
+ ventilator:{title:"呼吸器使用病人紀錄表 · Patient Respirator Record",text:"請先從 PT List 選擇病人。"},
  maintenance:{title:"儀器管理 · Maintenance",text:"此主題預留儀器保養、檢查與維修紀錄功能。"},
  handover:{title:"交班工作 · Handover",text:"此主題預留交班內容、待辦事項及交班狀態。"},
  duty:{title:"值班紀錄 · Duty Log",text:"此主題預留臨床事件、故障排除與值班處理紀錄。"},
@@ -351,14 +429,19 @@ const topics={
 };
 function openTopic(key){
  document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
- if(key==="patients"){$("patientSection").classList.remove("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
- $("patientSection").classList.add("hidden");$("placeholderSection").classList.remove("hidden");
+ if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
+ $("patientSection").classList.add("hidden");
+ $("ventilatorSection").classList.toggle("hidden",key!=="ventilator");
+ $("placeholderSection").classList.toggle("hidden",key==="ventilator");
  $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
- $("placeholderText").textContent=topics[key].text;
+ if(key!=="ventilator")$("placeholderText").textContent=topics[key].text;
+ if(key==="ventilator"&&selectedPatientId){const p=patients.find(x=>x.id===selectedPatientId);if(p)renderDetail(p);}
 }
 document.querySelectorAll(".topic").forEach(b=>b.addEventListener("click",()=>openTopic(b.dataset.topic)));
 $("backToPatients").addEventListener("click",()=>openTopic("patients"));
-categorySelect.addEventListener("change",()=>{selectedPatientId=null;updateUnits();});
+$("backToPatientsFromRecord").addEventListener("click",()=>openTopic("patients"));
+categorySelect.addEventListener("change",()=>{selectedPatientId=null;loadDemoData();
+updateUnits();});
 unitSelect.addEventListener("change",()=>{selectedPatientId=null;renderPatients();});
 searchInput.addEventListener("input",renderPatients);
 updateUnits();
