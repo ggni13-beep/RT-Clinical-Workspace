@@ -22,18 +22,18 @@ h1{font-size:23px;line-height:1.2;margin:0;font-weight:700}
 .subtitle{color:#d4e8f5;font-size:13px;margin-top:4px}
 .rule{height:1px;background:#66879a;margin:16px 0 8px;opacity:.7}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.topic{background:var(--card);border:1px solid #356078;border-radius:9px;min-height:112px;padding:13px 15px;text-align:left;color:var(--text);transition:background .15s,border-color .15s,transform .15s}
+.topic{background:var(--card);border:1px solid #356078;border-radius:9px;min-height:124px;padding:15px 16px;text-align:left;color:var(--text);transition:background .15s,border-color .15s,transform .15s}
 .topic:hover,.topic:focus-visible{background:var(--card-hover);border-color:var(--accent);transform:translateY(-1px);outline:none}
-.topic .ico{display:block;font-size:20px;height:27px;color:#d8f2ff}
-.topic .zh{font-size:14px;color:#e0edf5;margin-top:3px}
-.topic .en{font-size:16px;font-weight:700;margin-top:2px}
+.topic .ico{display:block;font-size:26px;height:34px;color:#d8f2ff}
+.topic .zh{font-size:17px;color:#e0edf5;margin-top:4px}
+.topic .en{font-size:20px;font-weight:700;margin-top:3px}
 .workspace{margin-top:18px;background:var(--panel);border:1px solid #2a4c60;border-radius:13px;padding:20px;min-height:290px}
 .workspace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 h2{font-size:20px;margin:0 0 5px}
-.hint{font-size:13px;color:var(--muted);margin:0 0 16px}
+.hint{font-size:14px;color:var(--muted);margin:0 0 16px}
 .pill{border:1px solid #47748b;border-radius:999px;padding:4px 10px;color:#c7e9fb;font-size:12px;white-space:nowrap}
 .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
-label{display:block;font-size:13px;color:#d6e8f4;margin-bottom:6px}
+label{display:block;font-size:15px;color:#d6e8f4;margin-bottom:7px}
 select,input{width:100%;padding:11px 12px;color:var(--text);background:var(--input);border:1px solid #42677b;border-radius:8px;min-height:43px}
 select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
@@ -43,16 +43,16 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .patient-btn strong{display:block;font-size:13px;overflow-wrap:anywhere}
 .patient-btn small{display:block;color:#b9d7e8;margin-top:4px}
 .detail{border:1px solid #31566b;background:#142b3a;border-radius:10px;padding:16px}
-.detail h3{margin:0 0 5px;font-size:17px;overflow-wrap:anywhere}
-.detail .subid{color:#b9d7e8;font-size:12px;margin-bottom:14px}
+.detail h3{margin:0 0 7px;font-size:21px;overflow-wrap:anywhere}
+.detail .subid{color:#b9d7e8;font-size:14px;margin-bottom:14px}
 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.field{background:#0f202c;border-radius:7px;padding:10px 11px;min-width:0}
-.field span{display:block;font-size:12px;color:#bdd6e5;margin-bottom:4px}
-.field strong{font-size:13px;overflow-wrap:anywhere}
+.field{background:#0f202c;border-radius:7px;padding:12px 13px;min-width:0}
+.field span{display:block;font-size:14px;color:#bdd6e5;margin-bottom:5px}
+.field strong{font-size:16px;overflow-wrap:anywhere}
 .primary{background:#287ba2;border:1px solid #65b9e3;color:white;border-radius:8px;padding:10px 14px;font-weight:700}
 .secondary{background:transparent;border:1px solid #4a7186;color:#d8edf8;border-radius:8px;padding:9px 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.notice{font-size:12px;color:var(--gold);margin:13px 0 0}
+.notice{font-size:13px;color:var(--gold);margin:13px 0 0}
 .empty{border:1px dashed #416479;border-radius:9px;padding:24px;text-align:center;color:#bfd5e2}
 .history{margin-top:15px}
  .status-warning{margin:10px 0;padding:10px 12px;border:1px solid #ffd36a;border-radius:8px;background:#392f18;color:#ffe39a;font-size:13px;font-weight:700}
@@ -64,13 +64,13 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .history-row:first-child{color:#a9dff9;font-weight:bold}
 .hidden{display:none!important}
 .footer{text-align:center;color:#7698ad;font-size:11px;margin-top:18px}
-@media(max-width:760px){
+@media(max-width:760px){.topic .ico{font-size:23px;height:30px}.topic .zh{font-size:15px}.topic .en{font-size:17px}
  .app{padding:12px 10px 22px}.hero{padding:15px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .topic{min-height:104px;padding:11px}.topic .en{font-size:14px}.workspace{padding:14px}
  .filters{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.patient-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
  .fields{grid-template-columns:1fr 1fr}.history-row{grid-template-columns:1fr;gap:3px}
 }
-@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}}
+@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}.topic .zh{font-size:14px}.topic .en{font-size:16px}}
 </style>
 </head>
 <body>
@@ -218,18 +218,63 @@ function renderDetail(p){
   field("診斷 / 收案原因",p.diagnosis)+field("開始使用 MV 日期",p.mvStart)+
   field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+
   field("收案人",p.collector)+field("VPN 狀態",(p.vpnStatus||"無VPN")+(p.vpnDate?"｜"+p.vpnDate:""))+
-  field("呼吸器重卡",(p.ventilatorCardStatus||"無重卡")+(p.ventilatorCardExpiry?"｜到期日："+p.ventilatorCardExpiry:""))+
+  field("呼吸器重卡",(p.ventilatorCardStatus||"無重卡")+(p.ventilatorCardExpiry?"｜日期："+p.ventilatorCardExpiry:"")+(p.cardHoldReason?"｜原因："+p.cardHoldReason+(p.cardHoldReason==="自行輸入"&&p.cardHoldCustom?"："+p.cardHoldCustom:""):""))+
   '</div>'+(warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">呼吸器使用天數未達提醒門檻。</div>')+
   '<div class="editable-field"><strong>VPN 狀態設定</strong><div class="fields">'+
   '<div><label for="vpnStatusInput">VPN 狀態</label><select id="vpnStatusInput"><option value="無VPN">無VPN</option><option value="入VPN">入VPN</option><option value="有VPN">有VPN</option></select></div>'+
-  '<div><label for="vpnDateInput">VPN 日期（入VPN／有VPN時填寫）</label><input id="vpnDateInput" type="date" value="'+escapeHtml(p.vpnDate||"")+'"></div></div><button class="primary" id="saveVpn">儲存 VPN 狀態</button></div>'+
+  '<div id="vpnDateWrap" class="'+((p.vpnStatus==="入VPN"||p.vpnStatus==="有VPN")?"":"hidden")+'"><label for="vpnDateInput">VPN 日期</label><input id="vpnDateInput" type="date" value="'+escapeHtml(p.vpnDate||"")+'"></div>'+
+  '</div><button class="primary" id="saveVpn">儲存 VPN 狀態</button></div>'+
   '<div class="editable-field"><strong>呼吸器重卡設定</strong><div class="fields">'+
-  '<div><label for="cardStatusInput">呼吸器重卡</label><select id="cardStatusInput"><option value="無重卡">無重卡</option><option value="待送重卡">待送重卡</option><option value="送出重卡">送出重卡</option><option value="有重卡">有重卡</option></select></div>'+
-  '<div><label for="cardExpiryInput">重卡到期日（有重卡時必填）</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div></div><button class="primary" id="saveCard">儲存重卡狀態</button></div>'+
+  '<div><label for="cardStatusInput">呼吸器重卡</label><select id="cardStatusInput"><option value="無重卡">無重卡</option><option value="待送重卡">待送重卡</option><option value="送出重卡">送出重卡</option><option value="有重卡">有重卡</option><option value="hold送重卡">hold送重卡</option></select></div>'+
+  '<div id="cardDateWrap" class="'+((p.ventilatorCardStatus==="送出重卡"||p.ventilatorCardStatus==="有重卡")?"":"hidden")+'"><label for="cardExpiryInput">'+(p.ventilatorCardStatus==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）")+'</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div>'+
+  '<div id="cardHoldWrap" class="'+(p.ventilatorCardStatus==="hold送重卡"?"":"hidden")+'"><label for="cardHoldReason">hold 原因</label><select id="cardHoldReason"><option value="">請選擇原因</option><option value="等證件或回復">等證件或回復</option><option value="醫療因素">醫療因素</option><option value="自行輸入">自行輸入</option></select><input id="cardHoldCustom" class="'+(p.cardHoldReason==="自行輸入"?"":"hidden")+'" type="text" placeholder="請輸入 hold 原因" value="'+escapeHtml(p.cardHoldCustom||"")+'"></div>'+
+  '</div><button class="primary" id="saveCard">儲存重卡狀態</button></div>'+
   '<div class="actions"><button class="primary" id="showHistory">查看呼吸器使用歷程 ('+p.history.length+')</button><button class="secondary" id="newHistory">新增歷程</button></div><p class="notice">本頁只使用虛構測試資料；尚未連接 SharePoint。呼吸器使用天數依開始日期計算，開始當日算第 1 天。</p><div id="historyArea" class="history hidden"></div>';
- $("vpnStatusInput").value=p.vpnStatus||"無VPN";$("cardStatusInput").value=p.ventilatorCardStatus||"無重卡";
- $("saveVpn").addEventListener("click",()=>{const status=$("vpnStatusInput").value,date=$("vpnDateInput").value;if((status==="入VPN"||status==="有VPN")&&!date){alert("選擇「入VPN」或「有VPN」時，請輸入日期。");return;}p.vpnStatus=status;p.vpnDate=status==="無VPN"?"":date;renderDetail(p);});
- $("saveCard").addEventListener("click",()=>{const status=$("cardStatusInput").value,date=$("cardExpiryInput").value;if(status==="有重卡"&&!date){alert("選擇「有重卡」時，必須輸入重卡到期日。");return;}p.ventilatorCardStatus=status;p.ventilatorCardExpiry=status==="有重卡"?date:"";renderDetail(p);});
+ $("vpnStatusInput").value=p.vpnStatus||"無VPN";
+ $("cardStatusInput").value=p.ventilatorCardStatus||"無重卡";
+ if($("cardHoldReason"))$("cardHoldReason").value=p.cardHoldReason||"";
+ function setTodayOnEnter(input){
+  if(!input)return;
+  input.addEventListener("keydown",event=>{
+   if(event.key==="Enter"){
+    event.preventDefault();
+    if(!input.value)input.value=new Date().toISOString().slice(0,10);
+   }
+  });
+ }
+ setTodayOnEnter($("vpnDateInput"));
+ setTodayOnEnter($("cardExpiryInput"));
+ $("vpnStatusInput").addEventListener("change",()=>{
+  const status=$("vpnStatusInput").value;
+  $("vpnDateWrap").classList.toggle("hidden",!(status==="入VPN"||status==="有VPN"));
+ });
+ $("cardStatusInput").addEventListener("change",()=>{
+  const status=$("cardStatusInput").value;
+  $("cardDateWrap").classList.toggle("hidden",!(status==="送出重卡"||status==="有重卡"));
+  $("cardHoldWrap").classList.toggle("hidden",status!=="hold送重卡");
+  const label=$("cardDateWrap").querySelector("label");
+  if(label)label.textContent=status==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）";
+ });
+ $("cardHoldReason").addEventListener("change",()=>{
+  $("cardHoldCustom").classList.toggle("hidden",$("cardHoldReason").value!=="自行輸入");
+ });
+ $("saveVpn").addEventListener("click",()=>{
+  const status=$("vpnStatusInput").value,date=$("vpnDateInput")?.value||"";
+  if((status==="入VPN"||status==="有VPN")&&!date){alert("選擇「入VPN」或「有VPN」時，請輸入日期。");return;}
+  p.vpnStatus=status;p.vpnDate=status==="無VPN"?"":date;renderDetail(p);
+ });
+ $("saveCard").addEventListener("click",()=>{
+  const status=$("cardStatusInput").value,date=$("cardExpiryInput")?.value||"";
+  const reason=$("cardHoldReason")?.value||"",custom=$("cardHoldCustom")?.value.trim()||"";
+  if((status==="送出重卡"||status==="有重卡")&&!date){alert("選擇「送出重卡」或「有重卡」時，必須輸入日期。");return;}
+  if(status==="hold送重卡"&&!reason){alert("選擇「hold送重卡」時，必須選擇 hold 原因。");return;}
+  if(status==="hold送重卡"&&reason==="自行輸入"&&!custom){alert("請輸入 hold 原因。");return;}
+  p.ventilatorCardStatus=status;
+  p.ventilatorCardExpiry=(status==="送出重卡"||status==="有重卡")?date:"";
+  p.cardHoldReason=status==="hold送重卡"?reason:"";
+  p.cardHoldCustom=(status==="hold送重卡"&&reason==="自行輸入")?custom:"";
+  renderDetail(p);
+ });
  $("showHistory").addEventListener("click",()=>renderHistory(p));$("newHistory").addEventListener("click",()=>addHistory(p));
 }
 function renderHistory(p){
