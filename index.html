@@ -24,6 +24,16 @@ h1{font-size:23px;line-height:1.2;margin:0;font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .topic{background:var(--card);border:1px solid #356078;border-radius:9px;min-height:124px;padding:15px 16px;text-align:left;color:var(--text);transition:background .15s,border-color .15s,transform .15s}
 .topic:hover,.topic:focus-visible{background:var(--card-hover);border-color:var(--accent);transform:translateY(-1px);outline:none}
+.topic.active{background:#176184;border:2px solid #8ed8ff;box-shadow:0 0 0 3px rgba(142,216,255,.18),inset 0 0 0 1px rgba(255,255,255,.08);transform:translateY(-1px)}
+.topic.active .zh,.topic.active .en{color:#fff}
+.history-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-weight:800;font-size:12px}
+.history-status.ongoing{background:#123f2b;border:1px solid #35d07f;color:#8ef0b6}
+.history-status.ended{background:#243542;border:1px solid #547386;color:#d7e7f0}
+.ongoing-panel{display:flex;align-items:center;gap:9px;min-height:48px;padding:8px 11px;border:1px solid #32b875;border-radius:8px;background:#103b2b;color:#a4f2c5;font-weight:800}
+.ongoing-panel input{width:20px;height:20px;min-height:20px;accent-color:#22c55e;flex:0 0 auto}
+.ongoing-panel.is-ended{background:#10202c;border-color:#42677b;color:#c5d7e2}
+.end-field-wrap{display:flex;flex-direction:column;gap:6px}
+.end-field-wrap>label{margin:0}
 .topic .ico{display:block;font-size:26px;height:34px;color:#d8f2ff}
 .topic .zh{font-size:17px;color:#e0edf5;margin-top:4px}
 .topic .en{font-size:20px;font-weight:700;margin-top:3px}
@@ -281,13 +291,12 @@ function renderDetail(p){
   '<div id="cardDateWrap" class="'+((p.ventilatorCardStatus==="送出重卡"||p.ventilatorCardStatus==="有重卡")?"":"hidden")+'"><label for="cardExpiryInput">'+(p.ventilatorCardStatus==="有重卡"?"重卡到期日":"送出重卡日期")+'</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div>'+
   '<div id="cardHoldWrap" class="'+(p.ventilatorCardStatus==="hold送重卡"?"":"hidden")+'"><label for="cardHoldReason">hold 原因</label><select id="cardHoldReason"><option value="">請選擇原因</option><option value="等證件或回復">等證件或回復</option><option value="醫療因素">醫療因素</option><option value="其他">其他（請輸入原因）</option></select><input id="cardHoldCustom" class="'+(p.cardHoldReason==="其他"?"":"hidden")+'" type="text" placeholder="請輸入 hold 原因" value="'+escapeHtml(p.cardHoldCustom||"")+'"></div>'+
   '</div><button class="primary" id="saveCard" type="button">儲存重卡狀態</button></div>'+
-  '<div class="editable-field"><strong>呼吸器使用歷程</strong><p class="hint">請填寫通氣方式、開始日期、結束日期；尚未結束可勾選「使用中」。新增後會列在下方，可編輯或刪除。</p>'+
+  '<div class="editable-field"><strong>呼吸器使用歷程</strong><p class="hint">請選擇目前狀態：綠色「使用中」代表尚未結束；取消勾選後可輸入實際結束日期。每位病人僅能有一筆使用中的歷程。</p>'+
   '<div class="fields">'+
   '<div><label for="histMode">通氣方式</label><select id="histMode"><option value="">請選擇</option><option>ETT-MV</option><option>Tr-MV</option><option>Tr-BiPAP</option><option>NIPPV</option><option>HFOT</option><option>其他</option></select></div>'+
   '<div><label for="histStart">開始日期</label><input id="histStart" type="date"></div>'+
-  '<div><label for="histEnd">結束日期</label><input id="histEnd" type="date"></div>'+
-  '<div><label for="histNote">備註</label><input id="histNote" type="text" placeholder="可留空"></div>'+
-  '<div><label><input id="histOngoing" type="checkbox" checked> 使用中（尚未結束）</label></div>'+
+  '<div class="end-field-wrap"><label for="histEnd">結束日期</label><input id="histEnd" type="date"><div id="histOngoingPanel" class="ongoing-panel"><input id="histOngoing" type="checkbox" checked><span>使用中（尚未結束）</span></div></div>'+
+  '<div><label for="histNote">備註</label><input id="histNote" type="text" placeholder="可留空"></div>'+ 
   '</div><button class="primary" id="addHistoryInline" type="button">新增呼吸器使用歷程</button></div>'+
   '<div class="editable-field"><strong>使用其他輔助治療（可複選）</strong><p class="hint">勾選後請輸入開始日期；iNO、HFOV、Prone、ECMO 可輸入結束日期；Surfactant 不需要結束日期。</p>'+
   '<div class="therapy-grid">'+['iNO','HFOV','Prone position','ECMO','Surfactant'].map(t=>'<div class="therapy-card" data-therapy="'+t+'"><label><input type="checkbox" class="therapy-check" value="'+t+'"> '+t+'</label><div class="fields therapy-dates hidden"><div><label>開始日期</label><input type="date" class="therapy-start"></div><div class="therapy-end-wrap"><label>結束日期</label><input type="date" class="therapy-end"></div></div></div>').join('')+'</div>'+
@@ -361,8 +370,9 @@ function renderDetail(p){
  });
  $("closureTracheostomy").value=(p.closure&&p.closure.tracheostomy)||'';$("closureFollowup").value=(p.closure&&p.closure.followup)||'';
  $("saveClosure").addEventListener('click',()=>{p.closure={mvEnd:$("closureMvEnd").value,tracheostomy:$("closureTracheostomy").value,followup:$("closureFollowup").value,followupOther:$("closureFollowupOther").value.trim(),date:$("closureDate").value};saveDemoData();alert('結束與後續照顧資料已儲存。');});
- $("histOngoing").addEventListener("change",()=>{$("histEnd").disabled=$("histOngoing").checked; if($("histOngoing").checked)$("histEnd").value="";});
- $("histEnd").disabled=true;$("histStart").value=p.mvStart&&/^\\d{4}-\\d{2}-\\d{2}$/.test(p.mvStart)?p.mvStart:new Date().toISOString().slice(0,10);
+ const syncHistoryStatus=()=>{const ongoing=$("histOngoing").checked;$("histEnd").disabled=ongoing;if(ongoing)$("histEnd").value="";$("histOngoingPanel").classList.toggle("is-ended",!ongoing);};
+ $("histOngoing").addEventListener("change",syncHistoryStatus);
+ syncHistoryStatus();$("histStart").value=p.mvStart&&/^\\d{4}-\\d{2}-\\d{2}$/.test(p.mvStart)?p.mvStart:new Date().toISOString().slice(0,10);
  $("addHistoryInline").addEventListener("click",()=>{
   const mode=$("histMode").value,startDate=$("histStart").value,ongoing=$("histOngoing").checked,endDate=ongoing?"使用中":$("histEnd").value,note=$("histNote").value.trim();
   if(!mode){alert("請選擇通氣方式。");return;}if(!startDate){alert("請選擇開始日期。");return;}if(!ongoing&&!endDate){alert("請選擇結束日期，或勾選使用中。");return;}if(!ongoing&&endDate<startDate){alert("結束日期不可早於開始日期。");return;}
@@ -398,7 +408,7 @@ function renderHistory(p){
  const show=$("showHistory");if(show)show.textContent="查看呼吸器使用歷程 ("+p.history.length+")";
  if(!p.history.length){area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><div class="empty">目前沒有呼吸器歷程，請按「新增歷程」。</div>';return;}
  area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><p class="hint">輔助治療會依日期重疊顯示在該筆呼吸器歷程右側；Surfactant 僅顯示開始日期。</p>'+
- p.history.map(h=>{const hs=h.start,he=h.end==='使用中'?'9999-12-31':h.end;const tags=(p.supportTherapies||[]).filter(t=>t.start<=he&&(t.name==='Surfactant'||(t.end||'9999-12-31')>=hs)).map(t=>'<div class="therapy-tag"><span>'+escapeHtml(t.name==='Prone position'?'Prone':t.name)+'</span>'+escapeHtml(t.start.slice(5).replace('-','/'))+(t.name==='Surfactant'?'':'–'+escapeHtml((t.end||'').slice(5).replace('-','/')) )+'</div>').join('');return '<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(110px,.8fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">ID：'+escapeHtml(h.id)+'</div></div><div>'+escapeHtml(h.start)+' → '+escapeHtml(h.end)+'</div><div>'+escapeHtml(h.note||'—')+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div><div class="therapy-tags">'+(tags||'<span class="hint">—</span>')+'</div></div>';}).join("");
+ p.history.map(h=>{const hs=h.start,he=h.end==='使用中'?'9999-12-31':h.end;const tags=(p.supportTherapies||[]).filter(t=>t.start<=he&&(t.name==='Surfactant'||(t.end||'9999-12-31')>=hs)).map(t=>'<div class="therapy-tag"><span>'+escapeHtml(t.name==='Prone position'?'Prone':t.name)+'</span>'+escapeHtml(t.start.slice(5).replace('-','/'))+(t.name==='Surfactant'?'':'–'+escapeHtml((t.end||'').slice(5).replace('-','/')) )+'</div>').join('');return '<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(110px,.8fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">ID：'+escapeHtml(h.id)+'</div></div><div><div>'+escapeHtml(h.start)+'</div>'+(h.end==='使用中'?'<span class="history-status ongoing">● 使用中・尚未結束</span>':'<span class="history-status ended">已結束：'+escapeHtml(h.end)+'</span>')+'</div><div>'+escapeHtml(h.note||'—')+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div><div class="therapy-tags">'+(tags||'<span class="hint">—</span>')+'</div></div>';}).join("");
  area.querySelectorAll(".edit-history").forEach(btn=>btn.addEventListener("click",()=>editHistory(p,btn.dataset.historyId)));
  area.querySelectorAll(".delete-history").forEach(btn=>btn.addEventListener("click",()=>deleteHistory(p,btn.dataset.historyId)));
 }
