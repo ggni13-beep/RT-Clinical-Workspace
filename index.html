@@ -55,13 +55,14 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .notice{font-size:13px;color:var(--gold);margin:13px 0 0}
 .empty{border:1px dashed #416479;border-radius:9px;padding:24px;text-align:center;color:#bfd5e2}
 .history{margin-top:15px}
- .status-warning{margin:10px 0;padding:10px 12px;border:1px solid #ffd36a;border-radius:8px;background:#392f18;color:#ffe39a;font-size:13px;font-weight:700}
+ .status-warning{margin:10px 0;padding:12px 14px;border:2px solid #ff3b30;border-left:8px solid #ff3b30;border-radius:8px;background:#7a1717;color:#ffffff;font-size:15px;font-weight:800;box-shadow:0 0 0 2px rgba(255,59,48,.22)}
  .status-ok{margin:10px 0;padding:10px 12px;border:1px solid #47748b;border-radius:8px;background:#0f202c;color:#c7e9fb;font-size:13px}
  .editable-field{margin-top:12px;padding:12px;border:1px solid #31566b;border-radius:9px;background:#10202c}
  .editable-field .fields{margin-top:10px}
  .editable-field .primary,.editable-field .secondary{margin-top:8px}
  input[type="date"]{display:block;width:100%;min-width:0;min-height:48px;padding:11px 12px;font-size:16px;line-height:1.4;touch-action:manipulation;-webkit-appearance:auto;appearance:auto;color-scheme:dark}
- input[type="date"]::-webkit-calendar-picker-indicator{opacity:1;cursor:pointer;min-width:24px;min-height:24px;padding:3px}
+ input[type="date"]::-webkit-calendar-picker-indicator{opacity:1;cursor:pointer;min-width:28px;min-height:28px;padding:3px}
+ @media(hover:none) and (pointer:coarse){input[type="date"]{background:#f7fbff!important;color:#10202c!important;color-scheme:light!important;border:2px solid #76bfe8!important}input[type="date"]::-webkit-calendar-picker-indicator{filter:none!important;opacity:1!important;background-color:#ffffff;border-radius:5px;box-shadow:0 0 0 2px #2d83ad;padding:5px;width:28px;height:28px}}
 .history-row{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;padding:11px;border-bottom:1px solid #29495c;font-size:13px}
 .history-row:first-child{color:#a9dff9;font-weight:bold}
 .hidden{display:none!important}
@@ -235,7 +236,12 @@ function renderDetail(p){
  $("vpnStatusInput").value=p.vpnStatus||"無VPN";
  $("cardStatusInput").value=p.ventilatorCardStatus||"無重卡";
  if((p.vpnStatus==="入VPN"||p.vpnStatus==="有VPN")&&!p.vpnDate)p.vpnDate=new Date().toISOString().slice(0,10);
- if($("cardHoldReason"))$("cardHoldReason").value=p.cardHoldReason||"";
+ if($("cardHoldReason")){
+  $("cardHoldReason").value=p.cardHoldReason||"";
+  $("cardHoldCustom").classList.toggle("hidden",$("cardHoldReason").value!=="其他");
+  $("cardHoldCustom").disabled=false;
+  $("cardHoldCustom").readOnly=false;
+ }
  function setTodayOnEnter(input){
   if(!input)return;
   input.addEventListener("keydown",event=>{
@@ -277,7 +283,7 @@ function renderDetail(p){
   const reason=$("cardHoldReason")?.value||"",custom=$("cardHoldCustom")?.value.trim()||"";
   if((status==="送出重卡"||status==="有重卡")&&!date){alert("選擇「送出重卡」或「有重卡」時，必須輸入日期。");return;}
   if(status==="hold送重卡"&&!reason){alert("選擇「hold送重卡」時，必須選擇 hold 原因。");return;}
-  if(status==="hold送重卡"&&reason==="其他"&&!custom){alert("請輸入 hold 原因。");return;}
+  if(status==="hold送重卡"&&reason==="其他"&&!custom){alert("請輸入 hold 原因。");$("cardHoldCustom").focus();return;}
   p.ventilatorCardStatus=status;
   p.ventilatorCardExpiry=(status==="送出重卡"||status==="有重卡")?date:"";
   p.cardHoldReason=status==="hold送重卡"?reason:"";
