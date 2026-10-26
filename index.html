@@ -55,6 +55,11 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .notice{font-size:12px;color:var(--gold);margin:13px 0 0}
 .empty{border:1px dashed #416479;border-radius:9px;padding:24px;text-align:center;color:#bfd5e2}
 .history{margin-top:15px}
+ .status-warning{margin:10px 0;padding:10px 12px;border:1px solid #ffd36a;border-radius:8px;background:#392f18;color:#ffe39a;font-size:13px;font-weight:700}
+ .status-ok{margin:10px 0;padding:10px 12px;border:1px solid #47748b;border-radius:8px;background:#0f202c;color:#c7e9fb;font-size:13px}
+ .editable-field{margin-top:12px;padding:12px;border:1px solid #31566b;border-radius:9px;background:#10202c}
+ .editable-field .fields{margin-top:10px}
+ .editable-field .primary,.editable-field .secondary{margin-top:8px}
 .history-row{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;padding:11px;border-bottom:1px solid #29495c;font-size:13px}
 .history-row:first-child{color:#a9dff9;font-weight:bold}
 .hidden{display:none!important}
@@ -193,17 +198,39 @@ function renderPatients(){
  const selected=list.find(p=>p.id===selectedPatientId)||list[0];selectedPatientId=selected.id;renderDetail(selected);
 }
 function field(label,value){return '<div class="field"><span>'+label+'</span><strong>'+String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</strong></div>';}
+function ventilatorDays(p){
+ if(!p.mvStart||p.mvStart==="尚未登錄")return null;
+ const start=new Date(p.mvStart+"T00:00:00");
+ if(Number.isNaN(start.getTime()))return null;
+ const today=new Date();today.setHours(0,0,0,0);start.setHours(0,0,0,0);
+ if(start>today)return 0;
+ return Math.floor((today-start)/86400000)+1;
+}
 function renderDetail(p){
+ const days=ventilatorDays(p),warnings=[];
+ if(days!==null&&days>21)warnings.push("準備送重卡");
+ if(days!==null&&days>14)warnings.push("請輸入VPN");
  $("patientDetail").innerHTML=
-  '<h3>'+p.name+'</h3><div class="subid">'+p.mrn+'</div><div class="fields">'+
+  '<h3>'+escapeHtml(p.name)+'</h3><div class="subid">'+escapeHtml(p.mrn)+'</div><div class="fields">'+
   field("單位分類",p.category)+field("單位名稱 / 代碼",p.unit+" · "+p.unitCode)+
   field("測試床號",p.bed)+field("收案日期",p.admissionDate)+
   field("姓名 / 測試年齡",p.name+" / "+p.age)+field("性別",p.sex)+
   field("診斷 / 收案原因",p.diagnosis)+field("開始使用 MV 日期",p.mvStart)+
-  field("收案人",p.collector)+field("VPN 狀態",p.vpn)+
-  '</div><div class="actions"><button class="primary" id="showHistory">查看呼吸器使用歷程 ('+p.history.length+')</button><button class="secondary" id="newHistory">新增歷程</button></div><p class="notice">本頁只使用虛構測試資料；不包含 FiO₂、PEEP 或呼吸器設定值。</p><div id="historyArea" class="history hidden"></div>';
- $("showHistory").addEventListener("click",()=>renderHistory(p));
- $("newHistory").addEventListener("click",()=>addHistory(p));
+  field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+
+  field("收案人",p.collector)+field("VPN 狀態",(p.vpnStatus||"無VPN")+(p.vpnDate?"｜"+p.vpnDate:""))+
+  field("呼吸器重卡",(p.ventilatorCardStatus||"無重卡")+(p.ventilatorCardExpiry?"｜到期日："+p.ventilatorCardExpiry:""))+
+  '</div>'+(warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">呼吸器使用天數未達提醒門檻。</div>')+
+  '<div class="editable-field"><strong>VPN 狀態設定</strong><div class="fields">'+
+  '<div><label for="vpnStatusInput">VPN 狀態</label><select id="vpnStatusInput"><option value="無VPN">無VPN</option><option value="入VPN">入VPN</option><option value="有VPN">有VPN</option></select></div>'+
+  '<div><label for="vpnDateInput">VPN 日期（入VPN／有VPN時填寫）</label><input id="vpnDateInput" type="date" value="'+escapeHtml(p.vpnDate||"")+'"></div></div><button class="primary" id="saveVpn">儲存 VPN 狀態</button></div>'+
+  '<div class="editable-field"><strong>呼吸器重卡設定</strong><div class="fields">'+
+  '<div><label for="cardStatusInput">呼吸器重卡</label><select id="cardStatusInput"><option value="無重卡">無重卡</option><option value="待送重卡">待送重卡</option><option value="送出重卡">送出重卡</option><option value="有重卡">有重卡</option></select></div>'+
+  '<div><label for="cardExpiryInput">重卡到期日（有重卡時必填）</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div></div><button class="primary" id="saveCard">儲存重卡狀態</button></div>'+
+  '<div class="actions"><button class="primary" id="showHistory">查看呼吸器使用歷程 ('+p.history.length+')</button><button class="secondary" id="newHistory">新增歷程</button></div><p class="notice">本頁只使用虛構測試資料；尚未連接 SharePoint。呼吸器使用天數依開始日期計算，開始當日算第 1 天。</p><div id="historyArea" class="history hidden"></div>';
+ $("vpnStatusInput").value=p.vpnStatus||"無VPN";$("cardStatusInput").value=p.ventilatorCardStatus||"無重卡";
+ $("saveVpn").addEventListener("click",()=>{const status=$("vpnStatusInput").value,date=$("vpnDateInput").value;if((status==="入VPN"||status==="有VPN")&&!date){alert("選擇「入VPN」或「有VPN」時，請輸入日期。");return;}p.vpnStatus=status;p.vpnDate=status==="無VPN"?"":date;renderDetail(p);});
+ $("saveCard").addEventListener("click",()=>{const status=$("cardStatusInput").value,date=$("cardExpiryInput").value;if(status==="有重卡"&&!date){alert("選擇「有重卡」時，必須輸入重卡到期日。");return;}p.ventilatorCardStatus=status;p.ventilatorCardExpiry=status==="有重卡"?date:"";renderDetail(p);});
+ $("showHistory").addEventListener("click",()=>renderHistory(p));$("newHistory").addEventListener("click",()=>addHistory(p));
 }
 function renderHistory(p){
  p.history.forEach(h=>{if(!h.id)h.id=makeHistoryId();});
