@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RT Clinical Dashboard | Respiratory Therapy Clinical Workspace</title>
+<style>
+:root{
+  --page:#08111a; --panel:#10202c; --panel2:#173244; --card:#244b63;
+  --card-hover:#2c5b76; --border:#31566b; --text:#f3f7fb; --muted:#b9d0df;
+  --accent:#8ed8ff; --gold:#ffd36a; --input:#0c1923;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font-family:Arial,"Microsoft JhengHei",sans-serif;line-height:1.5}
+button,select,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:1240px;margin:0 auto;padding:24px 18px 30px}
+.hero{background:#183c55;border:1px solid #2a536c;border-radius:14px;padding:20px 22px 18px;box-shadow:0 10px 28px #0003}
+.brand{display:flex;gap:12px;align-items:center}
+.brand-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid #91d9ff;border-radius:8px;color:#a7e3ff;font-size:21px}
+h1{font-size:23px;line-height:1.2;margin:0;font-weight:700}
+.subtitle{color:#d4e8f5;font-size:13px;margin-top:4px}
+.rule{height:1px;background:#66879a;margin:16px 0 8px;opacity:.7}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.topic{background:var(--card);border:1px solid #356078;border-radius:9px;min-height:112px;padding:13px 15px;text-align:left;color:var(--text);transition:background .15s,border-color .15s,transform .15s}
+.topic:hover,.topic:focus-visible{background:var(--card-hover);border-color:var(--accent);transform:translateY(-1px);outline:none}
+.topic .ico{display:block;font-size:20px;height:27px;color:#d8f2ff}
+.topic .zh{font-size:14px;color:#e0edf5;margin-top:3px}
+.topic .en{font-size:16px;font-weight:700;margin-top:2px}
+.workspace{margin-top:18px;background:var(--panel);border:1px solid #2a4c60;border-radius:13px;padding:20px;min-height:290px}
+.workspace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h2{font-size:20px;margin:0 0 5px}
+.hint{font-size:13px;color:var(--muted);margin:0 0 16px}
+.pill{border:1px solid #47748b;border-radius:999px;padding:4px 10px;color:#c7e9fb;font-size:12px;white-space:nowrap}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+label{display:block;font-size:13px;color:#d6e8f4;margin-bottom:6px}
+select,input{width:100%;padding:11px 12px;color:var(--text);background:var(--input);border:1px solid #42677b;border-radius:8px;min-height:43px}
+select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
+.patient-list{display:flex;flex-direction:column;gap:8px}
+.patient-btn{border:1px solid #31566b;background:#172d3c;color:var(--text);border-radius:8px;padding:12px;text-align:left}
+.patient-btn.active,.patient-btn:hover{border-color:#83d7ff;background:#20455d}
+.patient-btn strong{display:block;font-size:13px;overflow-wrap:anywhere}
+.patient-btn small{display:block;color:#b9d7e8;margin-top:4px}
+.detail{border:1px solid #31566b;background:#142b3a;border-radius:10px;padding:16px}
+.detail h3{margin:0 0 5px;font-size:17px;overflow-wrap:anywhere}
+.detail .subid{color:#b9d7e8;font-size:12px;margin-bottom:14px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.field{background:#0f202c;border-radius:7px;padding:10px 11px;min-width:0}
+.field span{display:block;font-size:12px;color:#bdd6e5;margin-bottom:4px}
+.field strong{font-size:13px;overflow-wrap:anywhere}
+.primary{background:#287ba2;border:1px solid #65b9e3;color:white;border-radius:8px;padding:10px 14px;font-weight:700}
+.secondary{background:transparent;border:1px solid #4a7186;color:#d8edf8;border-radius:8px;padding:9px 12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.notice{font-size:12px;color:var(--gold);margin:13px 0 0}
+.empty{border:1px dashed #416479;border-radius:9px;padding:24px;text-align:center;color:#bfd5e2}
+.history{margin-top:15px}
+.history-row{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;padding:11px;border-bottom:1px solid #29495c;font-size:13px}
+.history-row:first-child{color:#a9dff9;font-weight:bold}
+.hidden{display:none!important}
+.footer{text-align:center;color:#7698ad;font-size:11px;margin-top:18px}
+@media(max-width:760px){
+ .app{padding:12px 10px 22px}.hero{padding:15px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .topic{min-height:104px;padding:11px}.topic .en{font-size:14px}.workspace{padding:14px}
+ .filters{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.patient-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fields{grid-template-columns:1fr 1fr}.history-row{grid-template-columns:1fr;gap:3px}
+}
+@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">⌁</div>
+      <div>
+        <h1>RT Clinical Dashboard</h1>
+        <div class="subtitle">Respiratory Therapy Clinical Workspace</div>
+      </div>
+    </div>
+    <div class="rule"></div>
+    <nav class="grid" aria-label="六大主題">
+      <button class="topic" data-topic="patients"><span class="ico">♧</span><div class="zh">病人清單</div><div class="en">PT List</div></button>
+      <button class="topic" data-topic="ventilator"><span class="ico">≋</span><div class="zh">呼吸器照護</div><div class="en">Ventilator</div></button>
+      <button class="topic" data-topic="maintenance"><span class="ico">▣</span><div class="zh">儀器管理</div><div class="en">Maintenance</div></button>
+      <button class="topic" data-topic="handover"><span class="ico">▤</span><div class="zh">交班工作</div><div class="en">Handover</div></button>
+      <button class="topic" data-topic="duty"><span class="ico">☷</span><div class="zh">值班紀錄</div><div class="en">Duty Log</div></button>
+      <button class="topic" data-topic="schedule"><span class="ico">▦</span><div class="zh">人力管理</div><div class="en">Schedule</div></button>
+    </nav>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <div class="workspace-head">
+      <div>
+        <h2 id="sectionTitle">照護單位 / Unit Filter</h2>
+        <p class="hint" id="sectionHint">切換照護單位後，只顯示所選單位的虛擬病人。</p>
+      </div>
+      <span class="pill">本機虛構測試資料</span>
+    </div>
+
+    <section id="patientSection">
+      <div class="filters">
+        <div><label for="category">單位分類</label><select id="category"><option value="">請選擇單位分類</option></select></div>
+        <div><label for="unit">照護單位</label><select id="unit"><option value="">請先選擇單位分類</option></select></div>
+        <div><label for="search">搜尋病人</label><input id="search" placeholder="姓名 / 測試病歷號 / 床號"></div>
+      </div>
+      <div class="layout">
+        <section>
+          <div class="workspace-head" style="margin-bottom:10px"><strong>病人清單</strong><span class="pill" id="patientCount">0 位</span></div>
+          <div class="patient-list" id="patientList"><div class="empty">請先選擇單位分類與照護單位</div></div>
+          <p class="notice">DEMO 虛構資料｜不可用於真實病人照護或臨床決策。</p>
+        </section>
+        <section class="detail" id="patientDetail">
+          <div class="empty">選擇左側病人後，這裡會顯示病人收案資料。</div>
+        </section>
+      </div>
+    </section>
+
+    <section id="placeholderSection" class="hidden">
+      <div class="empty" id="placeholderText"></div>
+      <div class="actions"><button class="secondary" id="backToPatients">返回病人清單</button></div>
+    </section>
+  </main>
+  <footer class="footer">RT Clinical Dashboard · Prototype v1.0 · Fictional test data only · 尚未連接 SharePoint</footer>
+</div>
+<script>
+"use strict";
+const unitGroups = [
+ {category:"成人ICU", units:[{name:"成人 ICU（示範單位）",code:"ADULT-ICU-DEMO",beds:["A-01","A-02","A-03","A-04","A-05"]}]},
+ {category:"兒醫ICU", units:[{name:"兒醫 ICU",code:"06PE",beds:["06PE-01","06PE-02","06PE-03","06PE-04","06PE-05"]}]},
+ {category:"健大ICU", units:[{name:"健大 ICU",code:"07HS",beds:["07HS-01","07HS-02","07HS-03","07HS-04","07HS-05"]}]},
+ {category:"ED", units:[{name:"急診 ED",code:"ED",beds:["ED-01","ED-02","ED-03","ED-04","ED-05"]}]},
+ {category:"總院病房", units:[{name:"總院病房",code:"MAIN-WARD",beds:["總院-01","總院-02","總院-03","總院-04","總院-05"]}]},
+ {category:"西址病房", units:[{name:"西址病房",code:"WEST-WARD",beds:["西址-01","西址-02","西址-03","西址-04","西址-05"]}]},
+ {category:"兒醫病房", units:[{name:"兒醫病房",code:"CHILD-WARD",beds:["兒醫-01","兒醫-02","兒醫-03","兒醫-04","兒醫-05"]}]},
+ {category:"健大病房", units:[{name:"健大病房",code:"HEALTH-WARD",beds:["健大-01","健大-02","健大-03","健大-04","健大-05"]}]}
+];
+const patients = [];
+unitGroups.forEach(group => group.units.forEach(unit => unit.beds.forEach((bed,i) => {
+ const n = String(i+1).padStart(2,"0");
+ patients.push({
+  id: unit.code+"-"+n, category:group.category, unit:unit.name, unitCode:unit.code, bed,
+  name:group.category+"_"+unit.code+"_測試"+n,
+  mrn:"DEMO-"+unit.code.replace(/[^A-Za-z0-9]/g,"")+"-"+n,
+  admissionDate:"2026-10-"+String(10+i).padStart(2,"0"),
+  mvStart:i===0?"2026-09-20":"尚未登錄",
+  sex:["男","女","男","女","未設定"][i], age:[67,58,72,45,81][i],
+  diagnosis:["肺炎","COPD 急性惡化","呼吸衰竭","術後呼吸照護","其他呼吸照護需求"][i],
+  collector:"DEMO 測試帳號",vpn:["無","有","無","無","待確認"][i],
+  history:i===0?[
+   {mode:"Tr-BiPAP",start:"2026-09-20",end:"2026-09-24",note:"轉為侵襲性通氣"},
+   {mode:"ETT-MV",start:"2026-09-24",end:"2026-09-29",note:"拔管"},
+   {mode:"NIPPV / BiPAP",start:"2026-09-29",end:"2026-10-02",note:"狀況惡化，再次插管"},
+   {mode:"ETT-MV",start:"2026-10-02",end:"使用中",note:"目前仍使用"}
+  ]:[]
+ });
+})));
+const $ = id => document.getElementById(id);
+const categorySelect=$("category"), unitSelect=$("unit"), searchInput=$("search");
+let selectedPatientId=null;
+unitGroups.forEach(g=>categorySelect.add(new Option(g.category,g.category)));
+
+function updateUnits(){
+ const category=categorySelect.value;
+ unitSelect.innerHTML="";
+ unitSelect.add(new Option(category?"請選擇照護單位":"請先選擇單位分類",""));
+ const group=unitGroups.find(g=>g.category===category);
+ if(group) group.units.forEach(u=>unitSelect.add(new Option(u.name,u.code)));
+ renderPatients();
+}
+function renderPatients(){
+ const category=categorySelect.value, unitCode=unitSelect.value, q=searchInput.value.trim().toLowerCase();
+ const list=patients.filter(p=>(!category||p.category===category)&&(!unitCode||p.unitCode===unitCode)&&(!q||[p.name,p.mrn,p.bed,p.id].some(v=>v.toLowerCase().includes(q))));
+ $("patientCount").textContent=list.length+" 位";
+ const root=$("patientList");root.innerHTML="";
+ if(!category||!unitCode){root.innerHTML='<div class="empty">請選擇單位分類與照護單位</div>';$("patientDetail").innerHTML='<div class="empty">選擇單位後，病人收案資料會顯示於此。</div>';return;}
+ if(!list.length){root.innerHTML='<div class="empty">此條件沒有符合的虛擬病人</div>';$("patientDetail").innerHTML='<div class="empty">請調整搜尋條件。</div>';return;}
+ list.forEach(p=>{
+  const b=document.createElement("button");b.className="patient-btn"+(p.id===selectedPatientId?" active":"");b.type="button";
+  b.innerHTML="<strong></strong><small></small>";b.querySelector("strong").textContent=p.name;b.querySelector("small").textContent=p.bed+" · "+p.mrn;
+  b.addEventListener("click",()=>{selectedPatientId=p.id;renderPatients();renderDetail(p);});root.appendChild(b);
+ });
+ const selected=list.find(p=>p.id===selectedPatientId)||list[0];selectedPatientId=selected.id;renderDetail(selected);
+}
+function field(label,value){return '<div class="field"><span>'+label+'</span><strong>'+String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</strong></div>';}
+function renderDetail(p){
+ $("patientDetail").innerHTML=
+  '<h3>'+p.name+'</h3><div class="subid">'+p.mrn+'</div><div class="fields">'+
+  field("單位分類",p.category)+field("單位名稱 / 代碼",p.unit+" · "+p.unitCode)+
+  field("測試床號",p.bed)+field("收案日期",p.admissionDate)+
+  field("姓名 / 測試年齡",p.name+" / "+p.age)+field("性別",p.sex)+
+  field("診斷 / 收案原因",p.diagnosis)+field("開始使用 MV 日期",p.mvStart)+
+  field("收案人",p.collector)+field("VPN 狀態",p.vpn)+
+  '</div><div class="actions"><button class="primary" id="showHistory">查看呼吸器使用歷程 ('+p.history.length+')</button><button class="secondary" id="newHistory">新增歷程</button></div><p class="notice">本頁只使用虛構測試資料；不包含 FiO₂、PEEP 或呼吸器設定值。</p><div id="historyArea" class="history hidden"></div>';
+ $("showHistory").addEventListener("click",()=>renderHistory(p));
+ $("newHistory").addEventListener("click",()=>addHistory(p));
+}
+function renderHistory(p){
+ const area=$("historyArea");area.classList.remove("hidden");
+ if(!p.history.length){area.innerHTML='<div class="empty">目前沒有呼吸器歷程，請按「新增歷程」。</div>';return;}
+ area.innerHTML='<h3>呼吸器使用歷程（累加式）</h3><div class="history-row"><div>通氣方式</div><div>開始日期 → 結束日期</div><div>備註</div></div>'+
+ p.history.map(h=>'<div class="history-row"><div><strong>'+h.mode+'</strong></div><div>'+h.start+' → '+h.end+'</div><div>'+h.note+'</div></div>').join("");
+}
+function addHistory(p){
+ const mode=prompt("請輸入通氣方式（例如 Tr-BiPAP、ETT-MV、NIPPV）：");if(!mode||!mode.trim())return;
+ const start=prompt("開始日期（YYYY-MM-DD）：","2026-10-26");if(!start)return;
+ const end=prompt("結束日期；尚未結束請填「使用中」：","使用中");if(!end)return;
+ const note=prompt("備註（可留空）：","")||"";
+ p.history.push({mode:mode.trim(),start:start.trim(),end:end.trim(),note:note.trim()});
+ renderHistory(p);
+ const show=$("showHistory");if(show)show.textContent="查看呼吸器使用歷程 ("+p.history.length+")";
+}
+const topics={
+ patients:{title:"病人清單 · PT List",text:"依照護單位篩選虛擬病人，查看收案主檔。"},
+ ventilator:{title:"呼吸器照護 · Ventilator",text:"此主題預留呼吸器使用病人管理與累加式呼吸照護歷程。請先從「病人清單」選取病人，後續版本將在此整合病人歷程。"},
+ maintenance:{title:"儀器管理 · Maintenance",text:"此主題預留儀器保養、檢查與維修紀錄功能。"},
+ handover:{title:"交班工作 · Handover",text:"此主題預留交班內容、待辦事項及交班狀態。"},
+ duty:{title:"值班紀錄 · Duty Log",text:"此主題預留臨床事件、故障排除與值班處理紀錄。"},
+ schedule:{title:"人力管理 · Schedule",text:"此主題預留人力配置、排班與單位調度功能。"}
+};
+function openTopic(key){
+ document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
+ if(key==="patients"){$("patientSection").classList.remove("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="切換照護單位後，只顯示所選單位的虛擬病人。";return;}
+ $("patientSection").classList.add("hidden");$("placeholderSection").classList.remove("hidden");
+ $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
+ $("placeholderText").textContent=topics[key].text;
+}
+document.querySelectorAll(".topic").forEach(b=>b.addEventListener("click",()=>openTopic(b.dataset.topic)));
+$("backToPatients").addEventListener("click",()=>openTopic("patients"));
+categorySelect.addEventListener("change",()=>{selectedPatientId=null;updateUnits();});
+unitSelect.addEventListener("change",()=>{selectedPatientId=null;renderPatients();});
+searchInput.addEventListener("input",renderPatients);
+updateUnits();
+</script>
+</body>
+</html>
