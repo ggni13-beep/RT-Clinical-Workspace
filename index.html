@@ -271,7 +271,11 @@ function renderDetail(p){
   if(label)label.textContent=status==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）";
  });
  $("cardHoldReason").addEventListener("change",()=>{
-  $("cardHoldCustom").classList.toggle("hidden",$("cardHoldReason").value!=="自行輸入");
+  const isOther=$("cardHoldReason").value==="其他";
+  $("cardHoldCustom").classList.toggle("hidden",!isOther);
+  $("cardHoldCustom").disabled=false;
+  $("cardHoldCustom").readOnly=false;
+  if(isOther)$("cardHoldCustom").focus();
  });
  $("saveVpn").addEventListener("click",()=>{
   const status=$("vpnStatusInput").value,date=$("vpnDateInput")?.value||"";
