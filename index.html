@@ -187,10 +187,10 @@ unitGroups.forEach(group => group.units.forEach(unit => unit.beds.forEach((bed,i
   diagnosis:["肺炎","COPD 急性惡化","呼吸衰竭","術後呼吸照護","其他呼吸照護需求"][i],
   collector:"DEMO 測試帳號",vpn:["無","有","無","無","待確認"][i],
   history:i===0?[
-   {mode:"Tr-BiPAP",start:"2026-09-20",end:"2026-09-24",note:"轉為侵襲性通氣"},
-   {mode:"ETT-MV",start:"2026-09-24",end:"2026-09-29",note:"拔管"},
-   {mode:"NIPPV / BiPAP",start:"2026-09-29",end:"2026-10-02",note:"狀況惡化，再次插管"},
-   {mode:"ETT-MV",start:"2026-10-02",end:"使用中",note:"目前仍使用"}
+   {mode:"Tr-BiPAP",start:"2026-09-20",end:"2026-09-24",note:"轉為侵襲性通氣",machineModel:"Philips Trilogy EVO",serialNumber:"SN-DEMO-001"},
+   {mode:"ETT-MV",start:"2026-09-24",end:"2026-09-29",note:"拔管",machineModel:"Puritan Bennett 840",serialNumber:"SN-DEMO-002"},
+   {mode:"NIPPV / BiPAP",start:"2026-09-29",end:"2026-10-02",note:"狀況惡化，再次插管",machineModel:"Philips V60",serialNumber:"SN-DEMO-003"},
+   {mode:"ETT-MV",start:"2026-10-02",end:"使用中",note:"目前仍使用",machineModel:"Puritan Bennett 840",serialNumber:"SN-DEMO-004"}
   ]:[]
  });
 })));
@@ -307,6 +307,8 @@ function renderDetail(p){
   '<div class="fields">'+
   '<div><label for="histMode">通氣方式</label><select id="histMode"><option value="">請選擇</option><option>ETT-MV</option><option>Tr-MV</option><option>Tr-BiPAP</option><option>NIPPV</option><option>HFOT</option><option>其他</option></select></div>'+
   '<div><label for="histStart">開始日期</label><input id="histStart" type="date"></div>'+
+  '<div><label for="histMachineModel">呼吸器機種</label><input id="histMachineModel" type="text" placeholder="請輸入機種"></div>'+
+  '<div><label for="histSerialNumber">呼吸器序號</label><input id="histSerialNumber" type="text" placeholder="請輸入設備序號"></div>'+
   '<div class="end-field-wrap"><label for="histEnd">結束日期</label><input id="histEnd" type="date"><div id="histOngoingPanel" class="ongoing-panel"><input id="histOngoing" type="checkbox" checked><span>使用中（尚未結束）</span></div></div>'+
   '<div><label for="histNote">備註</label><input id="histNote" type="text" placeholder="可留空"></div>'+ 
   '</div><button class="primary" id="addHistoryInline" type="button">新增呼吸器使用歷程</button></div>'+
@@ -392,10 +394,10 @@ function renderDetail(p){
  $("histOngoing").addEventListener("change",syncHistoryStatus);
  syncHistoryStatus();$("histStart").value=p.mvStart&&/^\\d{4}-\\d{2}-\\d{2}$/.test(p.mvStart)?p.mvStart:new Date().toISOString().slice(0,10);
  $("addHistoryInline").addEventListener("click",()=>{
-  const mode=$("histMode").value,startDate=$("histStart").value,ongoing=$("histOngoing").checked,endDate=ongoing?"使用中":$("histEnd").value,note=$("histNote").value.trim();
+  const mode=$("histMode").value,startDate=$("histStart").value,ongoing=$("histOngoing").checked,endDate=ongoing?"使用中":$("histEnd").value,note=$("histNote").value.trim(),machineModel=$("histMachineModel").value.trim(),serialNumber=$("histSerialNumber").value.trim();
   if(!mode){alert("請選擇通氣方式。");return;}if(!startDate){alert("請選擇開始日期。");return;}if(!ongoing&&!endDate){alert("請選擇結束日期，或勾選使用中。");return;}if(!ongoing&&endDate<startDate){alert("結束日期不可早於開始日期。");return;}
   if(ongoing && (p.history||[]).some(h=>h.end==="使用中")){alert("這位病人已有一筆尚未結束的呼吸器使用歷程。請先結束或修正既有歷程，再新增使用中紀錄。");return;}
-  const record={id:makeHistoryId(),mode,start:startDate,end:endDate,note};p.history.push(record);recordHistoryAudit("CREATE",p,record.id,null,record);saveDemoData();renderDetail(p);$("historyArea").classList.remove("hidden");renderHistory(p);
+  const record={id:makeHistoryId(),mode,start:startDate,end:endDate,note,machineModel,serialNumber};p.history.push(record);recordHistoryAudit("CREATE",p,record.id,null,record);saveDemoData();renderDetail(p);$("historyArea").classList.remove("hidden");renderHistory(p);
  });
  $("showHistory").addEventListener("click",()=>{renderHistory(p);$("historyArea").classList.remove("hidden");});
  $("cardHoldReason").value=p.cardHoldReason||"";
@@ -426,7 +428,7 @@ function renderHistory(p){
  const show=$("showHistory");if(show)show.textContent="查看呼吸器使用歷程 ("+p.history.length+")";
  if(!p.history.length){area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><div class="empty">目前沒有呼吸器歷程，請按「新增歷程」。</div>';return;}
  area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><p class="hint">輔助治療會依日期重疊顯示在該筆呼吸器歷程右側；Surfactant 僅顯示開始日期。</p>'+
- p.history.map(h=>{const hs=h.start,he=h.end==='使用中'?'9999-12-31':h.end;const tags=(p.supportTherapies||[]).filter(t=>t.start<=he&&(t.name==='Surfactant'||(t.end||'9999-12-31')>=hs)).map(t=>'<div class="therapy-tag"><span>'+escapeHtml(t.name==='Prone position'?'Prone':t.name)+'</span>'+escapeHtml(t.start.slice(5).replace('-','/'))+(t.name==='Surfactant'?'':'–'+escapeHtml((t.end||'').slice(5).replace('-','/')) )+'</div>').join('');return '<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(110px,.8fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">ID：'+escapeHtml(h.id)+'</div></div><div><div>'+escapeHtml(h.start)+'</div>'+(h.end==='使用中'?'<span class="history-status ongoing">● 使用中・尚未結束</span>':'<span class="history-status ended">已結束：'+escapeHtml(h.end)+'</span>')+'</div><div>'+escapeHtml(h.note||'—')+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div><div class="therapy-tags">'+(tags||'<span class="hint">—</span>')+'</div></div>';}).join("");
+ p.history.map(h=>{const hs=h.start,he=h.end==='使用中'?'9999-12-31':h.end;const tags=(p.supportTherapies||[]).filter(t=>t.start<=he&&(t.name==='Surfactant'||(t.end||'9999-12-31')>=hs)).map(t=>'<div class="therapy-tag"><span>'+escapeHtml(t.name==='Prone position'?'Prone':t.name)+'</span>'+escapeHtml(t.start.slice(5).replace('-','/'))+(t.name==='Surfactant'?'':'–'+escapeHtml((t.end||'').slice(5).replace('-','/')) )+'</div>').join('');return '<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(110px,.8fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">機種：'+escapeHtml(h.machineModel||'尚未登錄')+'</div><div class="hint">序號：'+escapeHtml(h.serialNumber||'尚未登錄')+'</div></div><div><div>'+escapeHtml(h.start)+'</div>'+(h.end==='使用中'?'<span class="history-status ongoing">● 使用中・尚未結束</span>':'<span class="history-status ended">已結束：'+escapeHtml(h.end)+'</span>')+'</div><div>'+escapeHtml(h.note||'—')+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div><div class="therapy-tags">'+(tags||'<span class="hint">—</span>')+'</div></div>';}).join("");
  area.querySelectorAll(".edit-history").forEach(btn=>btn.addEventListener("click",()=>editHistory(p,btn.dataset.historyId)));
  area.querySelectorAll(".delete-history").forEach(btn=>btn.addEventListener("click",()=>deleteHistory(p,btn.dataset.historyId)));
 }
@@ -439,12 +441,14 @@ function editHistory(p,historyId){
  const start=prompt("開始日期（YYYY-MM-DD）：",record.start);if(start===null)return;
  const end=prompt("結束日期（YYYY-MM-DD 或「使用中」）：",record.end);if(end===null)return;
  const note=prompt("備註（可留空）：",record.note||"");if(note===null)return;
+ const machineModel=prompt("呼吸器機種：",record.machineModel||"");if(machineModel===null)return;
+ const serialNumber=prompt("呼吸器序號：",record.serialNumber||"");if(serialNumber===null)return;
  const cleanStart=start.trim(),cleanEnd=end.trim(),datePattern=/^\\d{4}-\\d{2}-\\d{2}$/;
  if(!datePattern.test(cleanStart)){alert("開始日期格式請使用 YYYY-MM-DD。");return;}
  if(cleanEnd!=="使用中"&&!datePattern.test(cleanEnd)){alert("結束日期請使用 YYYY-MM-DD 或「使用中」。");return;}
  if(cleanEnd!=="使用中"&&cleanEnd<cleanStart){alert("結束日期不可早於開始日期。");return;}
  if(cleanEnd==="使用中"&&p.history.some((h,i)=>i!==index&&h.end==="使用中")){alert("這位病人已有另一筆尚未結束的呼吸器使用歷程。請先修正其他歷程，再將此筆設為使用中。");return;}
- const after={...record,mode:mode.trim(),start:cleanStart,end:cleanEnd,note:note.trim()};
+ const after={...record,mode:mode.trim(),start:cleanStart,end:cleanEnd,note:note.trim(),machineModel:machineModel.trim(),serialNumber:serialNumber.trim()};
  p.history[index]=after;recordHistoryAudit("EDIT",p,historyId,before,after);saveDemoData();renderHistory(p);
 }
 function deleteHistory(p,historyId){
