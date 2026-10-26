@@ -60,6 +60,8 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
  .editable-field{margin-top:12px;padding:12px;border:1px solid #31566b;border-radius:9px;background:#10202c}
  .editable-field .fields{margin-top:10px}
  .editable-field .primary,.editable-field .secondary{margin-top:8px}
+ input[type="date"]{display:block;width:100%;min-width:0;min-height:48px;padding:11px 12px;font-size:16px;line-height:1.4;touch-action:manipulation;-webkit-appearance:auto;appearance:auto;color-scheme:dark}
+ input[type="date"]::-webkit-calendar-picker-indicator{opacity:1;cursor:pointer;min-width:24px;min-height:24px;padding:3px}
 .history-row{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;padding:11px;border-bottom:1px solid #29495c;font-size:13px}
 .history-row:first-child{color:#a9dff9;font-weight:bold}
 .hidden{display:none!important}
@@ -218,7 +220,7 @@ function renderDetail(p){
   field("診斷 / 收案原因",p.diagnosis)+field("開始使用 MV 日期",p.mvStart)+
   field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+
   field("收案人",p.collector)+field("VPN 狀態",(p.vpnStatus||"無VPN")+(p.vpnDate?"｜"+p.vpnDate:""))+
-  field("呼吸器重卡",(p.ventilatorCardStatus||"無重卡")+(p.ventilatorCardExpiry?"｜日期："+p.ventilatorCardExpiry:"")+(p.cardHoldReason?"｜原因："+p.cardHoldReason+(p.cardHoldReason==="自行輸入"&&p.cardHoldCustom?"："+p.cardHoldCustom:""):""))+
+  field("呼吸器重卡",(p.ventilatorCardStatus||"無重卡")+(p.ventilatorCardExpiry?"｜日期："+p.ventilatorCardExpiry:"")+(p.cardHoldReason?"｜原因："+(p.cardHoldReason==="其他"?(p.cardHoldCustom||"其他"):p.cardHoldReason):""))+
   '</div>'+(warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">呼吸器使用天數未達提醒門檻。</div>')+
   '<div class="editable-field"><strong>VPN 狀態設定</strong><div class="fields">'+
   '<div><label for="vpnStatusInput">VPN 狀態</label><select id="vpnStatusInput"><option value="無VPN">無VPN</option><option value="入VPN">入VPN</option><option value="有VPN">有VPN</option></select></div>'+
@@ -227,11 +229,12 @@ function renderDetail(p){
   '<div class="editable-field"><strong>呼吸器重卡設定</strong><div class="fields">'+
   '<div><label for="cardStatusInput">呼吸器重卡</label><select id="cardStatusInput"><option value="無重卡">無重卡</option><option value="待送重卡">待送重卡</option><option value="送出重卡">送出重卡</option><option value="有重卡">有重卡</option><option value="hold送重卡">hold送重卡</option></select></div>'+
   '<div id="cardDateWrap" class="'+((p.ventilatorCardStatus==="送出重卡"||p.ventilatorCardStatus==="有重卡")?"":"hidden")+'"><label for="cardExpiryInput">'+(p.ventilatorCardStatus==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）")+'</label><input id="cardExpiryInput" type="date" value="'+escapeHtml(p.ventilatorCardExpiry||"")+'"></div>'+
-  '<div id="cardHoldWrap" class="'+(p.ventilatorCardStatus==="hold送重卡"?"":"hidden")+'"><label for="cardHoldReason">hold 原因</label><select id="cardHoldReason"><option value="">請選擇原因</option><option value="等證件或回復">等證件或回復</option><option value="醫療因素">醫療因素</option><option value="自行輸入">自行輸入</option></select><input id="cardHoldCustom" class="'+(p.cardHoldReason==="自行輸入"?"":"hidden")+'" type="text" placeholder="請輸入 hold 原因" value="'+escapeHtml(p.cardHoldCustom||"")+'"></div>'+
+  '<div id="cardHoldWrap" class="'+(p.ventilatorCardStatus==="hold送重卡"?"":"hidden")+'"><label for="cardHoldReason">hold 原因</label><select id="cardHoldReason"><option value="">請選擇原因</option><option value="等證件或回復">等證件或回復</option><option value="醫療因素">醫療因素</option><option value="其他">其他（請輸入原因）</option></select><input id="cardHoldCustom" class="'+(p.cardHoldReason==="其他"?"":"hidden")+'" type="text" placeholder="請輸入 hold 原因" value="'+escapeHtml(p.cardHoldCustom||"")+'"></div>'+
   '</div><button class="primary" id="saveCard">儲存重卡狀態</button></div>'+
   '<div class="actions"><button class="primary" id="showHistory">查看呼吸器使用歷程 ('+p.history.length+')</button><button class="secondary" id="newHistory">新增歷程</button></div><p class="notice">本頁只使用虛構測試資料；尚未連接 SharePoint。呼吸器使用天數依開始日期計算，開始當日算第 1 天。</p><div id="historyArea" class="history hidden"></div>';
  $("vpnStatusInput").value=p.vpnStatus||"無VPN";
  $("cardStatusInput").value=p.ventilatorCardStatus||"無重卡";
+ if((p.vpnStatus==="入VPN"||p.vpnStatus==="有VPN")&&!p.vpnDate)p.vpnDate=new Date().toISOString().slice(0,10);
  if($("cardHoldReason"))$("cardHoldReason").value=p.cardHoldReason||"";
  function setTodayOnEnter(input){
   if(!input)return;
@@ -246,12 +249,18 @@ function renderDetail(p){
  setTodayOnEnter($("cardExpiryInput"));
  $("vpnStatusInput").addEventListener("change",()=>{
   const status=$("vpnStatusInput").value;
-  $("vpnDateWrap").classList.toggle("hidden",!(status==="入VPN"||status==="有VPN"));
+  const needsDate=(status==="入VPN"||status==="有VPN");
+  $("vpnDateWrap").classList.toggle("hidden",!needsDate);
+  const dateInput=$("vpnDateInput");
+  if(needsDate&&dateInput&&!dateInput.value)dateInput.value=new Date().toISOString().slice(0,10);
  });
  $("cardStatusInput").addEventListener("change",()=>{
   const status=$("cardStatusInput").value;
-  $("cardDateWrap").classList.toggle("hidden",!(status==="送出重卡"||status==="有重卡"));
+  const needsDate=(status==="送出重卡"||status==="有重卡");
+  $("cardDateWrap").classList.toggle("hidden",!needsDate);
   $("cardHoldWrap").classList.toggle("hidden",status!=="hold送重卡");
+  const dateInput=$("cardExpiryInput");
+  if(needsDate&&dateInput&&!dateInput.value)dateInput.value=new Date().toISOString().slice(0,10);
   const label=$("cardDateWrap").querySelector("label");
   if(label)label.textContent=status==="有重卡"?"重卡到期日（必填）":"送出重卡日期（必填）";
  });
@@ -268,11 +277,11 @@ function renderDetail(p){
   const reason=$("cardHoldReason")?.value||"",custom=$("cardHoldCustom")?.value.trim()||"";
   if((status==="送出重卡"||status==="有重卡")&&!date){alert("選擇「送出重卡」或「有重卡」時，必須輸入日期。");return;}
   if(status==="hold送重卡"&&!reason){alert("選擇「hold送重卡」時，必須選擇 hold 原因。");return;}
-  if(status==="hold送重卡"&&reason==="自行輸入"&&!custom){alert("請輸入 hold 原因。");return;}
+  if(status==="hold送重卡"&&reason==="其他"&&!custom){alert("請輸入 hold 原因。");return;}
   p.ventilatorCardStatus=status;
   p.ventilatorCardExpiry=(status==="送出重卡"||status==="有重卡")?date:"";
   p.cardHoldReason=status==="hold送重卡"?reason:"";
-  p.cardHoldCustom=(status==="hold送重卡"&&reason==="自行輸入")?custom:"";
+  p.cardHoldCustom=(status==="hold送重卡"&&reason==="其他")?custom:"";
   renderDetail(p);
  });
  $("showHistory").addEventListener("click",()=>renderHistory(p));$("newHistory").addEventListener("click",()=>addHistory(p));
