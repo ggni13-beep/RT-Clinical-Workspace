@@ -93,7 +93,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
     <div class="workspace-head">
       <div>
         <h2 id="sectionTitle">照護單位 / Unit Filter</h2>
-        <p class="hint" id="sectionHint">切換照護單位後，只顯示所選單位的虛擬病人。</p>
+        <p class="hint" id="sectionHint">可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。</p>
       </div>
       <span class="pill">本機虛構測試資料</span>
     </div>
@@ -158,6 +158,13 @@ unitGroups.forEach(group => group.units.forEach(unit => unit.beds.forEach((bed,i
 const $ = id => document.getElementById(id);
 const categorySelect=$("category"), unitSelect=$("unit"), searchInput=$("search");
 let selectedPatientId=null;
+const historyAuditLog=[]; // Demo only; persist server-side after SharePoint/Microsoft Lists integration.
+let historyIdCounter=1;
+function makeHistoryId(){return "H-"+Date.now().toString(36)+"-"+(historyIdCounter++).toString(36);}
+function escapeHtml(value){return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+function recordHistoryAudit(action,patient,recordId,before,after){
+ historyAuditLog.push({action,patientId:patient.id,historyId:recordId,modifiedAt:new Date().toISOString(),modifiedBy:"DEMO 測試帳號",before:before?{...before}:null,after:after?{...after}:null});
+}
 unitGroups.forEach(g=>categorySelect.add(new Option(g.category,g.category)));
 
 function updateUnits(){
@@ -170,10 +177,13 @@ function updateUnits(){
 }
 function renderPatients(){
  const category=categorySelect.value, unitCode=unitSelect.value, q=searchInput.value.trim().toLowerCase();
- const list=patients.filter(p=>(!category||p.category===category)&&(!unitCode||p.unitCode===unitCode)&&(!q||[p.name,p.mrn,p.bed,p.id].some(v=>v.toLowerCase().includes(q))));
+ const list=patients.filter(p=>(!category||p.category===category)&&(!unitCode||p.unitCode===unitCode)&&(!q||[p.name,p.mrn,p.bed,p.id,p.unit,p.category].some(v=>String(v).toLowerCase().includes(q))));
  $("patientCount").textContent=list.length+" 位";
  const root=$("patientList");root.innerHTML="";
- if(!category||!unitCode){root.innerHTML='<div class="empty">請選擇單位分類與照護單位</div>';$("patientDetail").innerHTML='<div class="empty">選擇單位後，病人收案資料會顯示於此。</div>';return;}
+ if(!category&&!unitCode&&!q){
+  root.innerHTML='<div class="empty">請選擇單位分類／照護單位，或直接輸入姓名、病歷號、床號進行全院搜尋。</div>';
+  $("patientDetail").innerHTML='<div class="empty">搜尋結果選取後，病人收案資料會顯示於此。</div>';return;
+ }
  if(!list.length){root.innerHTML='<div class="empty">此條件沒有符合的虛擬病人</div>';$("patientDetail").innerHTML='<div class="empty">請調整搜尋條件。</div>';return;}
  list.forEach(p=>{
   const b=document.createElement("button");b.className="patient-btn"+(p.id===selectedPatientId?" active":"");b.type="button";
@@ -196,19 +206,49 @@ function renderDetail(p){
  $("newHistory").addEventListener("click",()=>addHistory(p));
 }
 function renderHistory(p){
+ p.history.forEach(h=>{if(!h.id)h.id=makeHistoryId();});
  const area=$("historyArea");area.classList.remove("hidden");
- if(!p.history.length){area.innerHTML='<div class="empty">目前沒有呼吸器歷程，請按「新增歷程」。</div>';return;}
- area.innerHTML='<h3>呼吸器使用歷程（累加式）</h3><div class="history-row"><div>通氣方式</div><div>開始日期 → 結束日期</div><div>備註</div></div>'+
- p.history.map(h=>'<div class="history-row"><div><strong>'+h.mode+'</strong></div><div>'+h.start+' → '+h.end+'</div><div>'+h.note+'</div></div>').join("");
+ const show=$("showHistory");if(show)show.textContent="查看呼吸器使用歷程 ("+p.history.length+")";
+ if(!p.history.length){area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><div class="empty">目前沒有呼吸器歷程，請按「新增歷程」。</div>';return;}
+ area.innerHTML='<h3>呼吸器使用歷程（可重疊、可修正）</h3><p class="hint">每筆紀錄有獨立 ID。HFNC、BiPAP 等支持方式可有重疊日期；編輯只更新所選 ID。</p>'+
+ p.history.map(h=>'<div class="history-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.2fr)"><div><strong>'+escapeHtml(h.mode)+'</strong><div class="hint">ID：'+escapeHtml(h.id)+'</div></div><div>'+escapeHtml(h.start)+' → '+escapeHtml(h.end)+'</div><div>'+escapeHtml(h.note||"—")+'<div class="actions"><button type="button" class="secondary edit-history" data-history-id="'+escapeHtml(h.id)+'">編輯</button><button type="button" class="secondary delete-history" data-history-id="'+escapeHtml(h.id)+'">刪除</button></div></div></div>').join("");
+ area.querySelectorAll(".edit-history").forEach(btn=>btn.addEventListener("click",()=>editHistory(p,btn.dataset.historyId)));
+ area.querySelectorAll(".delete-history").forEach(btn=>btn.addEventListener("click",()=>deleteHistory(p,btn.dataset.historyId)));
+}
+function editHistory(p,historyId){
+ const index=p.history.findIndex(h=>h.id===historyId);
+ if(index<0){alert("找不到這筆歷程，請重新整理後再試。");return;}
+ const record=p.history[index],before={...record};
+ const mode=prompt("通氣方式：",record.mode);if(mode===null)return;
+ if(!mode.trim()){alert("通氣方式不可空白。");return;}
+ const start=prompt("開始日期（YYYY-MM-DD）：",record.start);if(start===null)return;
+ const end=prompt("結束日期（YYYY-MM-DD 或「使用中」）：",record.end);if(end===null)return;
+ const note=prompt("備註（可留空）：",record.note||"");if(note===null)return;
+ const cleanStart=start.trim(),cleanEnd=end.trim(),datePattern=/^\\d{4}-\\d{2}-\\d{2}$/;
+ if(!datePattern.test(cleanStart)){alert("開始日期格式請使用 YYYY-MM-DD。");return;}
+ if(cleanEnd!=="使用中"&&!datePattern.test(cleanEnd)){alert("結束日期請使用 YYYY-MM-DD 或「使用中」。");return;}
+ if(cleanEnd!=="使用中"&&cleanEnd<cleanStart){alert("結束日期不可早於開始日期。");return;}
+ const after={...record,mode:mode.trim(),start:cleanStart,end:cleanEnd,note:note.trim()};
+ p.history[index]=after;recordHistoryAudit("EDIT",p,historyId,before,after);renderHistory(p);
+}
+function deleteHistory(p,historyId){
+ const index=p.history.findIndex(h=>h.id===historyId);
+ if(index<0){alert("找不到這筆歷程，請重新整理後再試。");return;}
+ const record=p.history[index];
+ if(!confirm("確定要刪除這筆呼吸器歷程嗎？\\nID："+record.id+"\\n"+record.mode+"｜"+record.start+" → "+record.end+"\\n\\n此操作會從目前的示範畫面移除該筆紀錄。"))return;
+ const before={...record};p.history.splice(index,1);recordHistoryAudit("DELETE",p,historyId,before,null);renderHistory(p);
 }
 function addHistory(p){
- const mode=prompt("請輸入通氣方式（例如 Tr-BiPAP、ETT-MV、NIPPV）：");if(!mode||!mode.trim())return;
- const start=prompt("開始日期（YYYY-MM-DD）：","2026-10-26");if(!start)return;
- const end=prompt("結束日期；尚未結束請填「使用中」：","使用中");if(!end)return;
+ const mode=prompt("請輸入通氣方式（例如 HFNC、BiPAP、Tr-BiPAP、ETT-MV）：");if(!mode||!mode.trim())return;
+ const start=prompt("開始日期（YYYY-MM-DD）：",new Date().toISOString().slice(0,10));if(!start)return;
+ const end=prompt("結束日期（YYYY-MM-DD）；尚未結束請填「使用中」：","使用中");if(!end)return;
  const note=prompt("備註（可留空）：","")||"";
- p.history.push({mode:mode.trim(),start:start.trim(),end:end.trim(),note:note.trim()});
- renderHistory(p);
- const show=$("showHistory");if(show)show.textContent="查看呼吸器使用歷程 ("+p.history.length+")";
+ const cleanStart=start.trim(),cleanEnd=end.trim(),datePattern=/^\\d{4}-\\d{2}-\\d{2}$/;
+ if(!datePattern.test(cleanStart)){alert("開始日期格式請使用 YYYY-MM-DD。");return;}
+ if(cleanEnd!=="使用中"&&!datePattern.test(cleanEnd)){alert("結束日期請使用 YYYY-MM-DD 或「使用中」。");return;}
+ if(cleanEnd!=="使用中"&&cleanEnd<cleanStart){alert("結束日期不可早於開始日期。");return;}
+ const record={id:makeHistoryId(),mode:mode.trim(),start:cleanStart,end:cleanEnd,note:note.trim()};
+ p.history.push(record);recordHistoryAudit("CREATE",p,record.id,null,record);renderHistory(p);
 }
 const topics={
  patients:{title:"病人清單 · PT List",text:"依照護單位篩選虛擬病人，查看收案主檔。"},
@@ -220,7 +260,7 @@ const topics={
 };
 function openTopic(key){
  document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
- if(key==="patients"){$("patientSection").classList.remove("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="切換照護單位後，只顯示所選單位的虛擬病人。";return;}
+ if(key==="patients"){$("patientSection").classList.remove("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
  $("patientSection").classList.add("hidden");$("placeholderSection").classList.remove("hidden");
  $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
  $("placeholderText").textContent=topics[key].text;
