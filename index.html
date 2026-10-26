@@ -89,7 +89,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
     <div class="rule"></div>
     <nav class="grid" aria-label="六大主題">
       <button class="topic" data-topic="patients"><span class="ico">♧</span><div class="zh">病人清單</div><div class="en">PT List</div></button>
-      <button class="topic" data-topic="ventilator"><span class="ico">≋</span><div class="zh">呼吸器照護</div><div class="en">Ventilator</div></button>
+      <button class="topic" data-topic="ventilator"><span class="ico">≋</span><div class="zh">呼吸器使用病人紀錄表</div><div class="en">Patient Respirator Record</div></button>
       <button class="topic" data-topic="maintenance"><span class="ico">▣</span><div class="zh">儀器管理</div><div class="en">Maintenance</div></button>
       <button class="topic" data-topic="handover"><span class="ico">▤</span><div class="zh">交班工作</div><div class="en">Handover</div></button>
       <button class="topic" data-topic="duty"><span class="ico">☷</span><div class="zh">值班紀錄</div><div class="en">Duty Log</div></button>
@@ -118,10 +118,17 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
           <div class="patient-list" id="patientList"><div class="empty">請先選擇單位分類與照護單位</div></div>
           <p class="notice">DEMO 虛構資料｜不可用於真實病人照護或臨床決策。</p>
         </section>
-        <section class="detail" id="patientDetail">
-          <div class="empty">選擇左側病人後，這裡會顯示病人收案資料。</div>
-        </section>
       </div>
+    </section>
+
+    <section id="ventilatorSection" class="hidden">
+      <div class="workspace-head">
+        <div><h3>呼吸器使用病人紀錄表</h3><p class="hint">病人收案資料、VPN／呼吸重卡狀態與呼吸器使用歷程。</p></div>
+        <button class="secondary" id="backToPatientsFromRecord">返回 PT List</button>
+      </div>
+      <section class="detail" id="patientDetail">
+        <div class="empty">請先從 PT List 選擇病人。</div>
+      </section>
     </section>
 
     <section id="placeholderSection" class="hidden">
@@ -190,15 +197,14 @@ function renderPatients(){
  const root=$("patientList");root.innerHTML="";
  if(!category&&!unitCode&&!q){
   root.innerHTML='<div class="empty">請選擇單位分類／照護單位，或直接輸入姓名、病歷號、床號進行全院搜尋。</div>';
-  $("patientDetail").innerHTML='<div class="empty">搜尋結果選取後，病人收案資料會顯示於此。</div>';return;
+  return;
  }
- if(!list.length){root.innerHTML='<div class="empty">此條件沒有符合的虛擬病人</div>';$("patientDetail").innerHTML='<div class="empty">請調整搜尋條件。</div>';return;}
+ if(!list.length){root.innerHTML='<div class="empty">此條件沒有符合的虛擬病人</div>';return;}
  list.forEach(p=>{
   const b=document.createElement("button");b.className="patient-btn"+(p.id===selectedPatientId?" active":"");b.type="button";
   b.innerHTML="<strong></strong><small></small>";b.querySelector("strong").textContent=p.name;b.querySelector("small").textContent=p.bed+" · "+p.mrn;
-  b.addEventListener("click",()=>{selectedPatientId=p.id;renderPatients();renderDetail(p);});root.appendChild(b);
+  b.addEventListener("click",()=>{selectedPatientId=p.id;renderPatients();renderDetail(p);openTopic("ventilator");});root.appendChild(b);
  });
- const selected=list.find(p=>p.id===selectedPatientId)||list[0];selectedPatientId=selected.id;renderDetail(selected);
 }
 function field(label,value){return '<div class="field"><span>'+label+'</span><strong>'+String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</strong></div>';}
 function ventilatorDays(p){
@@ -211,8 +217,8 @@ function ventilatorDays(p){
 }
 function renderDetail(p){
  const days=ventilatorDays(p),warnings=[];
- if(days!==null&&days>21)warnings.push("準備送重卡");
- if(days!==null&&days>14)warnings.push("請輸入VPN");
+ if(days!==null&&days>=14&&(p.vpnStatus||"無VPN")!=="有VPN")warnings.push("請入VPN");
+ if(days!==null&&days>=21&&(p.ventilatorCardStatus||"無重卡")!=="有重卡")warnings.push("符合申請呼吸器重卡條件");
  $("patientDetail").innerHTML=
   '<h3>'+escapeHtml(p.name)+'</h3><div class="subid">'+escapeHtml(p.mrn)+'</div><div class="fields">'+
   field("單位分類",p.category)+field("單位名稱 / 代碼",p.unit+" · "+p.unitCode)+
@@ -343,7 +349,7 @@ function addHistory(p){
 }
 const topics={
  patients:{title:"病人清單 · PT List",text:"依照護單位篩選虛擬病人，查看收案主檔。"},
- ventilator:{title:"呼吸器照護 · Ventilator",text:"此主題預留呼吸器使用病人管理與累加式呼吸照護歷程。請先從「病人清單」選取病人，後續版本將在此整合病人歷程。"},
+ ventilator:{title:"呼吸器使用病人紀錄表 · Patient Respirator Record",text:"請先從 PT List 選擇病人。"},
  maintenance:{title:"儀器管理 · Maintenance",text:"此主題預留儀器保養、檢查與維修紀錄功能。"},
  handover:{title:"交班工作 · Handover",text:"此主題預留交班內容、待辦事項及交班狀態。"},
  duty:{title:"值班紀錄 · Duty Log",text:"此主題預留臨床事件、故障排除與值班處理紀錄。"},
@@ -351,13 +357,15 @@ const topics={
 };
 function openTopic(key){
  document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
- if(key==="patients"){$("patientSection").classList.remove("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
- $("patientSection").classList.add("hidden");$("placeholderSection").classList.remove("hidden");
+ if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
+ $("patientSection").classList.add("hidden");$("ventilatorSection").classList.toggle("hidden",key!=="ventilator");$("placeholderSection").classList.toggle("hidden",key==="ventilator");
  $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
- $("placeholderText").textContent=topics[key].text;
+ if(key!=="ventilator")$("placeholderText").textContent=topics[key].text;
+ if(key==="ventilator"&&selectedPatientId){const p=patients.find(x=>x.id===selectedPatientId);if(p)renderDetail(p);}
 }
 document.querySelectorAll(".topic").forEach(b=>b.addEventListener("click",()=>openTopic(b.dataset.topic)));
 $("backToPatients").addEventListener("click",()=>openTopic("patients"));
+$("backToPatientsFromRecord").addEventListener("click",()=>openTopic("patients"));
 categorySelect.addEventListener("change",()=>{selectedPatientId=null;updateUnits();});
 unitSelect.addEventListener("change",()=>{selectedPatientId=null;renderPatients();});
 searchInput.addEventListener("input",renderPatients);
