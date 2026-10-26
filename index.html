@@ -86,6 +86,14 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .end-date-control{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.end-date-control>input[type="date"]{flex:1;min-width:150px}.ongoing-inline{display:flex;align-items:center;gap:6px;white-space:nowrap;font-weight:600}.ongoing-inline input{width:auto;margin:0;accent-color:#28a5d6}
 @media(max-width:420px){.intake-fields{grid-template-columns:1fr}.intake-fields .wide{grid-column:auto}.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}.topic .zh{font-size:14px}.topic .en{font-size:16px}}
 
+.status-top-row{display:grid;grid-template-columns:minmax(220px,1fr) minmax(300px,1fr);gap:12px;align-items:start;margin-top:10px}
+.status-days .field{height:100%}
+.status-right{min-width:0}
+.status-right .status-summary{margin-top:0;padding:8px 10px;border:1px solid #31566b;border-radius:8px;background:#10202c}
+.location-history{margin-top:10px;padding:9px 11px;border-top:1px solid #31566b;font-size:14px;line-height:1.8}
+.location-history strong{display:block;margin-bottom:3px}
+.location-history-lines div{margin:0}
+@media(max-width:650px){.status-top-row{grid-template-columns:1fr}.status-right{width:100%}}
 .status-summary{margin-top:10px;padding-top:8px;border-top:1px solid #31566b;font-size:14px;line-height:1.8}.status-summary strong{display:block;margin-bottom:3px}.status-summary-lines div{margin:0}.therapy-grid{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:8px;margin:10px 0}.therapy-card{border:1px solid #356078;border-radius:8px;padding:10px;background:#10202c}.therapy-card label{display:flex;align-items:center;gap:6px;font-weight:700}.therapy-card .therapy-dates{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}.therapy-card .therapy-end-wrap.hidden{display:none}.therapy-tags{display:flex;flex-direction:column;gap:4px}.therapy-tag{font-size:12px;font-weight:700;color:#ffdb62}.therapy-tag span{display:inline-block;padding:2px 6px;margin-right:4px;border-radius:3px;background:#9b2430;color:#fff}.history-row{align-items:start}.closure-note{font-size:12px;color:var(--muted)}@media(max-width:700px){.therapy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
@@ -255,6 +263,10 @@ function renderStatusSummary(p){
  lines.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  return lines.length?lines.map(item=>'<div>'+escapeHtml(item.text)+'：'+escapeHtml(formatStatusDate(item.date))+'</div>').join(""):'<div>尚無已儲存的狀態紀錄。</div>';
 }
+function renderLocationHistory(p){
+ const lines=Array.isArray(p.locationHistory)?p.locationHistory:[];
+ return lines.length?lines.map(item=>'<div>'+escapeHtml(item.date||"")+'｜'+escapeHtml(item.from||"")+' → '+escapeHtml(item.to||"")+'</div>').join(""):'<div>尚無單位／床位異動紀錄。</div>';
+}
 function renderDetail(p){
  const days=ventilatorDays(p),warnings=[];
  const vpnText=String(p.vpnStatus||"無VPN");
@@ -279,9 +291,9 @@ function renderDetail(p){
   '<div><label for="editBed">床號</label><input id="editBed" type="text" value="'+escapeHtml(p.bed||"")+'" placeholder="請輸入床號"></div>'+
   '<div class="wide"><label for="editDiagnosis">診斷／收案原因</label><input id="editDiagnosis" type="text" value="'+escapeHtml(p.diagnosis||"")+'" placeholder="請輸入診斷"></div>'+
   '</div><button class="primary" id="savePatientBasics" type="button">儲存病人資料</button></div>'+
-  '<div class="fields">'+field("單位名稱",p.unit)+field("床號",p.bed)+field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+'</div>'+
-  '<div class="status-summary"><strong>VPN 與呼吸器重卡歷程</strong><div class="status-summary-lines">'+renderStatusSummary(p)+'</div></div>'+
-  (warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">目前沒有達到未完成項目的提醒門檻。</div>')+
+  '<div class="status-top-row"><div class="status-days">'+field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+'</div><div class="status-right"><div class="status-summary"><strong>VPN 與呼吸器重卡歷程</strong><div class="status-summary-lines">'+renderStatusSummary(p)+'</div></div>'+
+  (warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">目前沒有達到未完成項目的提醒門檻。</div>')+'</div></div>'+
+  '<div class="location-history"><strong>病患單位／床位異動歷程</strong><div class="location-history-lines">'+renderLocationHistory(p)+'</div></div>'+
   '<div class="editable-field"><strong>VPN 狀態</strong><div class="fields">'+
   '<div><label for="vpnStatusInput">VPN 狀態</label><select id="vpnStatusInput"><option value="無VPN">無VPN</option><option value="入VPN">入VPN</option><option value="有VPN">有VPN</option></select></div>'+
   '<div id="vpnDateWrap" class="'+((p.vpnStatus==="入VPN"||p.vpnStatus==="有VPN")?"":"hidden")+'"><label for="vpnDateInput">VPN 日期</label><input id="vpnDateInput" type="date" value="'+escapeHtml(p.vpnDate||"")+'"></div>'+
@@ -324,6 +336,12 @@ function renderDetail(p){
   if(!name){alert("請輸入姓名。");$("editName").focus();return;}
   if(!sex){alert("請選擇性別。");$("editSex").focus();return;}
   if(dob&&dob>new Date().toISOString().slice(0,10)){alert("出生年月日不可晚於今天。");return;}
+  const previousLocation=[p.unit||"",p.bed||""].filter(Boolean).join("／");
+  const nextLocation=[unit.name,bed].filter(Boolean).join("／");
+  if(previousLocation&&previousLocation!==nextLocation){
+   p.locationHistory=Array.isArray(p.locationHistory)?p.locationHistory:[];
+   p.locationHistory.push({date:new Date().toLocaleDateString("sv-SE"),from:previousLocation,to:nextLocation});
+  }
   p.category=unit.category;p.unit=unit.name;p.unitCode=unit.code;p.bed=bed;p.name=name;p.mrn=mrn;p.admissionDate=admissionDate;p.sex=sex;p.dob=dob;p.age=dob?calculateAge(dob):p.age;p.diagnosis=diagnosis;p.mvStart=mvStart||"尚未登錄";
   saveDemoData();renderPatients();renderDetail(p);alert("病人資料已儲存（目前儲存於此瀏覽器的示範資料）。");
  });
