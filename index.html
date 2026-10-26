@@ -123,12 +123,10 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 
     <section id="ventilatorSection" class="hidden">
       <div class="workspace-head">
-        <div><h3>呼吸器使用病人紀錄表</h3><p class="hint">病人收案資料、VPN／呼吸重卡狀態與呼吸器使用歷程。</p></div>
+        <div><h3>呼吸器使用病人紀錄表</h3><p class="hint">病人收案資料、VPN／呼吸重卡狀態與呼吸器使用歷程集中於此。</p></div>
         <button class="secondary" id="backToPatientsFromRecord">返回 PT List</button>
       </div>
-      <section class="detail" id="patientDetail">
-        <div class="empty">請先從 PT List 選擇病人。</div>
-      </section>
+      <section class="detail" id="patientDetail"><div class="empty">請先從 PT List 選擇病人。</div></section>
     </section>
 
     <section id="placeholderSection" class="hidden">
@@ -217,8 +215,10 @@ function ventilatorDays(p){
 }
 function renderDetail(p){
  const days=ventilatorDays(p),warnings=[];
- if(days!==null&&days>=14&&(p.vpnStatus||"無VPN")!=="有VPN")warnings.push("請入VPN");
- if(days!==null&&days>=21&&(p.ventilatorCardStatus||"無重卡")!=="有重卡")warnings.push("符合申請呼吸器重卡條件");
+ const vpnDone=String(p.vpnStatus||"").toLowerCase().includes("已完成")||String(p.vpnStatus||"").toLowerCase().includes("有vpn");
+ const cardDone=String(p.ventilatorCardStatus||"").toLowerCase().includes("已完成")||String(p.ventilatorCardStatus||"").toLowerCase().includes("有重卡");
+ if(days!==null&&days>=21&&!cardDone)warnings.push("符合申請呼吸器重卡條件");
+ if(days!==null&&days>=14&&!vpnDone)warnings.push("請入 VPN");
  $("patientDetail").innerHTML=
   '<h3>'+escapeHtml(p.name)+'</h3><div class="subid">'+escapeHtml(p.mrn)+'</div><div class="fields">'+
   field("單位分類",p.category)+field("單位名稱 / 代碼",p.unit+" · "+p.unitCode)+
@@ -358,7 +358,9 @@ const topics={
 function openTopic(key){
  document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
  if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
- $("patientSection").classList.add("hidden");$("ventilatorSection").classList.toggle("hidden",key!=="ventilator");$("placeholderSection").classList.toggle("hidden",key==="ventilator");
+ $("patientSection").classList.add("hidden");
+ $("ventilatorSection").classList.toggle("hidden",key!=="ventilator");
+ $("placeholderSection").classList.toggle("hidden",key==="ventilator");
  $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
  if(key!=="ventilator")$("placeholderText").textContent=topics[key].text;
  if(key==="ventilator"&&selectedPatientId){const p=patients.find(x=>x.id===selectedPatientId);if(p)renderDetail(p);}
