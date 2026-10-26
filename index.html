@@ -45,7 +45,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .detail{border:1px solid #31566b;background:#142b3a;border-radius:10px;padding:16px}
 .detail h3{margin:0 0 7px;font-size:21px;overflow-wrap:anywhere}
 .detail .subid{color:#b9d7e8;font-size:14px;margin-bottom:14px}
-.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.intake-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.intake-fields .wide{grid-column:1/-1}
 .field{background:#0f202c;border-radius:7px;padding:12px 13px;min-width:0}
 .field span{display:block;font-size:14px;color:#bdd6e5;margin-bottom:5px}
 .field strong{font-size:16px;overflow-wrap:anywhere}
@@ -71,9 +71,9 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
  .app{padding:12px 10px 22px}.hero{padding:15px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .topic{min-height:104px;padding:11px}.topic .en{font-size:14px}.workspace{padding:14px}
  .filters{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.patient-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
- .fields{grid-template-columns:1fr 1fr}.history-row{grid-template-columns:1fr;gap:3px}
+ .fields{grid-template-columns:1fr 1fr}.intake-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.history-row{grid-template-columns:1fr;gap:3px}
 }
-@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}.topic .zh{font-size:14px}.topic .en{font-size:16px}}
+@media(max-width:420px){.intake-fields{grid-template-columns:1fr}.intake-fields .wide{grid-column:auto}.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.patient-list{grid-template-columns:1fr}h1{font-size:20px}.topic .zh{font-size:14px}.topic .en{font-size:16px}}
 
 .status-summary{margin-top:10px;padding-top:8px;border-top:1px solid #31566b;font-size:14px;line-height:1.8}.status-summary strong{display:block;margin-bottom:3px}.status-summary-lines div{margin:0}.therapy-grid{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:8px;margin:10px 0}.therapy-card{border:1px solid #356078;border-radius:8px;padding:10px;background:#10202c}.therapy-card label{display:flex;align-items:center;gap:6px;font-weight:700}.therapy-card .therapy-dates{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}.therapy-card .therapy-end-wrap.hidden{display:none}.therapy-tags{display:flex;flex-direction:column;gap:4px}.therapy-tag{font-size:12px;font-weight:700;color:#ffdb62}.therapy-tag span{display:inline-block;padding:2px 6px;margin-right:4px;border-radius:3px;background:#9b2430;color:#fff}.history-row{align-items:start}.closure-note{font-size:12px;color:var(--muted)}@media(max-width:700px){.therapy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
@@ -116,7 +116,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
       </div>
       <div class="layout">
         <section>
-          <div class="workspace-head" style="margin-bottom:10px"><strong>病人清單</strong><span class="pill" id="patientCount">0 位</span></div>
+          <div class="workspace-head" style="margin-bottom:10px;align-items:center"><strong>病人清單</strong><div class="actions" style="margin:0;align-items:center"><span class="pill" id="patientCount">0 位</span><button class="primary" id="addPatientBtn" type="button">＋ 新增病人</button></div></div>
           <div class="patient-list" id="patientList"><div class="empty">請先選擇單位分類與照護單位</div></div>
           <p class="notice">DEMO 虛構資料｜不可用於真實病人照護或臨床決策。</p>
         </section>
@@ -251,17 +251,19 @@ function renderDetail(p){
  $("patientDetail").innerHTML=
   '<h3>'+escapeHtml(p.name)+'</h3><div class="subid">'+escapeHtml(p.mrn)+'</div>'+
   '<div class="editable-field"><strong>病人收案資料（可編輯）</strong>'+
-  '<div class="fields">'+
+  '<div class="intake-fields">'+
+  '<div><label for="editName">姓名</label><input id="editName" type="text" value="'+escapeHtml(p.name||"")+'" placeholder="請輸入姓名"></div>'+
+  '<div><label for="editMrn">病歷號</label><input id="editMrn" type="text" value="'+escapeHtml(p.mrn||"")+'" placeholder="請輸入病歷號"></div>'+
+  '<div><label for="editSex">性別</label><select id="editSex"><option value="">請選擇</option><option '+(p.sex==="男"?"selected":"")+' value="男">男</option><option '+(p.sex==="女"?"selected":"")+' value="女">女</option><option '+(p.sex==="未設定"?"selected":"")+' value="未設定">未設定</option></select></div>'+
+  '<div><label for="editAdmissionDate">收案日期</label><input id="editAdmissionDate" type="date" value="'+escapeHtml(/^\d{4}-\d{2}-\d{2}$/.test(p.admissionDate||"")?p.admissionDate:"")+'"></div>'+
+  '<div><label for="editDob">出生年月日</label><input id="editDob" type="date" value="'+escapeHtml(p.dob||"")+'"></div>'+
+  '<div><label for="editAge">年齡</label><input id="editAge" type="text" readonly value="'+(p.dob?calculateAge(p.dob):escapeHtml(p.age||""))+'"></div>'+
+  '<div><label for="editMvStart">開始使用呼吸器日期</label><input id="editMvStart" type="date" value="'+(/^\d{4}-\d{2}-\d{2}$/.test(p.mvStart||"")?p.mvStart:"")+'"></div>'+
   '<div><label for="editUnit">單位名稱</label><select id="editUnit">'+unitOptions.map(u=>'<option value="'+escapeHtml(u.code)+'" '+(u.code===p.unitCode?'selected':'')+'>'+escapeHtml(u.name)+'（'+escapeHtml(u.code)+'）</option>').join("")+'</select></div>'+
   '<div><label for="editBed">床號</label><input id="editBed" type="text" value="'+escapeHtml(p.bed||"")+'" placeholder="請輸入床號"></div>'+
-  '<div><label for="editName">姓名</label><input id="editName" type="text" value="'+escapeHtml(p.name||"")+'" placeholder="請輸入姓名"></div>'+
-  '<div><label for="editSex">性別</label><select id="editSex"><option value="">請選擇</option><option '+(p.sex==="男"?"selected":"")+' value="男">男</option><option '+(p.sex==="女"?"selected":"")+' value="女">女</option><option '+(p.sex==="未設定"?"selected":"")+' value="未設定">未設定</option></select></div>'+
-  '<div><label for="editDob">出生年月日</label><input id="editDob" type="date" value="'+escapeHtml(p.dob||"")+'"></div>'+
-  '<div><label for="editAge">姓名／年齡（整數歲，自動計算）</label><input id="editAge" type="text" readonly value="'+(p.dob?calculateAge(p.dob):escapeHtml(p.age||""))+'"></div>'+
-  '<div><label for="editDiagnosis">診斷／收案原因</label><input id="editDiagnosis" type="text" value="'+escapeHtml(p.diagnosis||"")+'" placeholder="請輸入診斷"></div>'+
-  '<div><label for="editMvStart">開始使用呼吸器日期</label><input id="editMvStart" type="date" value="'+(/^\\d{4}-\\d{2}-\\d{2}$/.test(p.mvStart||"")?p.mvStart:"")+'"></div>'+
+  '<div class="wide"><label for="editDiagnosis">診斷／收案原因</label><input id="editDiagnosis" type="text" value="'+escapeHtml(p.diagnosis||"")+'" placeholder="請輸入診斷"></div>'+
   '</div><button class="primary" id="savePatientBasics" type="button">儲存病人資料</button></div>'+
-  '<div class="fields">'+field("單位分類",p.category)+field("病歷號／測試編號",p.mrn)+field("收案日期",p.admissionDate)+field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+field("收案人",p.collector)+'</div>'+
+  '<div class="fields">'+field("單位名稱",p.unit)+field("床號",p.bed)+field("呼吸器使用天數",days===null?"尚未登錄":days+" 天")+'</div>'+
   '<div class="status-summary"><strong>VPN 與呼吸器重卡歷程</strong><div class="status-summary-lines">'+renderStatusSummary(p)+'</div></div>'+
   (warnings.length?'<div class="status-warning" role="alert">⚠ '+warnings.map(escapeHtml).join("；")+'</div>':'<div class="status-ok">目前沒有達到未完成項目的提醒門檻。</div>')+
   '<div class="editable-field"><strong>VPN 狀態</strong><div class="fields">'+
@@ -299,13 +301,15 @@ function renderDetail(p){
  dobInput.addEventListener("change",()=>{$("editAge").value=dobInput.value?calculateAge(dobInput.value):"";});
  $("savePatientBasics").addEventListener("click",()=>{
   const unit=unitOptions.find(u=>u.code===$("editUnit").value);
-  const name=$("editName").value.trim(),bed=$("editBed").value.trim(),sex=$("editSex").value,diagnosis=$("editDiagnosis").value.trim(),dob=$("editDob").value,mvStart=$("editMvStart").value;
+  const name=$("editName").value.trim(),mrn=$("editMrn").value.trim(),admissionDate=$("editAdmissionDate").value,bed=$("editBed").value.trim(),sex=$("editSex").value,diagnosis=$("editDiagnosis").value.trim(),dob=$("editDob").value,mvStart=$("editMvStart").value;
   if(!unit){alert("請選擇單位名稱。");return;}
   if(!bed){alert("請輸入床號。");$("editBed").focus();return;}
+  if(!mrn){alert("請輸入病歷號。");$("editMrn").focus();return;}
+  if(!admissionDate){alert("請選擇收案日期。");$("editAdmissionDate").focus();return;}
   if(!name){alert("請輸入姓名。");$("editName").focus();return;}
   if(!sex){alert("請選擇性別。");$("editSex").focus();return;}
   if(dob&&dob>new Date().toISOString().slice(0,10)){alert("出生年月日不可晚於今天。");return;}
-  p.category=unit.category;p.unit=unit.name;p.unitCode=unit.code;p.bed=bed;p.name=name;p.sex=sex;p.dob=dob;p.age=dob?calculateAge(dob):p.age;p.diagnosis=diagnosis;p.mvStart=mvStart||"尚未登錄";
+  p.category=unit.category;p.unit=unit.name;p.unitCode=unit.code;p.bed=bed;p.name=name;p.mrn=mrn;p.admissionDate=admissionDate;p.sex=sex;p.dob=dob;p.age=dob?calculateAge(dob):p.age;p.diagnosis=diagnosis;p.mvStart=mvStart||"尚未登錄";
   saveDemoData();renderPatients();renderDetail(p);alert("病人資料已儲存（目前儲存於此瀏覽器的示範資料）。");
  });
  $("vpnStatusInput").addEventListener("change",()=>{
@@ -378,7 +382,7 @@ function loadDemoData(){
   const raw=localStorage.getItem("rtClinicalWorkspaceDemoPatients");
   if(!raw)return;
   const saved=JSON.parse(raw);
-  if(Array.isArray(saved))saved.forEach(sp=>{const p=patients.find(x=>x.id===sp.id);if(p)Object.assign(p,sp);});
+  if(Array.isArray(saved))saved.forEach(sp=>{const p=patients.find(x=>x.id===sp.id);if(p)Object.assign(p,sp);else if(String(sp.id||"").startsWith("NEW-"))patients.push(sp);});
  }catch(e){}
 }
 function renderHistory(p){
@@ -443,6 +447,13 @@ $("backToPatientsFromRecord").addEventListener("click",()=>openTopic("patients")
 categorySelect.addEventListener("change",()=>{selectedPatientId=null;loadDemoData();
 updateUnits();});
 unitSelect.addEventListener("change",()=>{selectedPatientId=null;renderPatients();});
+$("addPatientBtn").addEventListener("click",()=>{
+ const unitCode=unitSelect.value,group=unitGroups.find(g=>g.category===categorySelect.value),unit=(group&&group.units.find(u=>u.code===unitCode))||null;
+ const chosen=unit||{code:"",name:"",category:categorySelect.value||""};
+ const id="NEW-"+Date.now(),today=new Date().toISOString().slice(0,10);
+ const p={id,category:chosen.category,unit:chosen.name,unitCode:chosen.code,bed:"",name:"",mrn:"",admissionDate:today,mvStart:"尚未登錄",sex:"",dob:"",age:"",diagnosis:"",collector:"",history:[],supportTherapies:[],vpnHistory:[],ventilatorCardHistory:[],vpnStatus:"無VPN",ventilatorCardStatus:"無重卡",closure:{}};
+ patients.push(p);selectedPatientId=id;saveDemoData();renderPatients();renderDetail(p);openTopic("ventilator");
+});
 searchInput.addEventListener("input",renderPatients);
 updateUnits();
 </script>
