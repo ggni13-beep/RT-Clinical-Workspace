@@ -39,6 +39,7 @@ h1{font-size:23px;line-height:1.2;margin:0;font-weight:700}
 .topic .en{font-size:20px;font-weight:700;margin-top:3px}
 .workspace{margin-top:18px;background:var(--panel);border:1px solid #2a4c60;border-radius:13px;padding:20px;min-height:290px}
 .workspace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.search-ventilator-btn{background:#8b5cf6;border:1px solid #c4b5fd;color:#fff;border-radius:9px;padding:10px 14px;font-weight:800;white-space:nowrap}.search-ventilator-btn:hover{background:#7c3aed}.search-result-card{border:1px solid #47748b;background:#173244;border-radius:10px;padding:14px;margin-top:12px}.search-result-card strong{display:block;font-size:16px}.search-flow-note{color:#ffd36a;font-size:13px;margin:8px 0 14px}.search-destination-fields{border:1px solid #31566b;border-radius:9px;padding:12px;margin-top:12px;background:#10202c}
 h2{font-size:20px;margin:0 0 5px}
 .hint{font-size:14px;color:var(--muted);margin:0 0 16px}
 .pill{border:1px solid #47748b;border-radius:999px;padding:4px 10px;color:#c7e9fb;font-size:12px;white-space:nowrap}
@@ -47,9 +48,13 @@ label{display:block;font-size:15px;color:#d6e8f4;margin-bottom:7px}
 select,input{width:100%;padding:11px 12px;color:var(--text);background:var(--input);border:1px solid #42677b;border-radius:8px;min-height:43px}
 select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-.patient-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;align-items:stretch}
+.cycle-status-button{display:inline;border:0;background:transparent;color:#ffdc73;text-decoration:underline;padding:0;cursor:pointer;font:inherit}.cycle-status-button.is-complete{color:#ff5b68;font-weight:800;text-decoration-thickness:2px;text-shadow:0 0 5px rgba(255,91,104,.22)}.equipment-cycle-line{font-size:12px;line-height:1.8}.equipment-card{cursor:pointer;text-align:left}.equipment-card:hover{border-color:#8bd8ff;background:#21475d}.patient-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;align-items:stretch}
+#equipmentList{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}#equipmentList .equipment-card{display:block;width:100%;min-width:0;overflow-wrap:anywhere;align-self:stretch}#equipmentList .equipment-cycle-line{overflow-wrap:anywhere;word-break:normal} @media(max-width:760px){#equipmentList{grid-template-columns:repeat(2,minmax(0,1fr))}} @media(max-width:480px){#equipmentList{grid-template-columns:1fr}}
 .patient-btn{border:1px solid #31566b;background:#172d3c;color:var(--text);border-radius:8px;padding:12px;text-align:left}
 .patient-btn.active,.patient-btn:hover{border-color:#83d7ff;background:#20455d}
+.patient-btn.cycle-selected{border:2px solid #ffcc4d!important;background:#3a4b32!important;box-shadow:0 0 0 2px rgba(255,204,77,.24),0 0 14px rgba(255,204,77,.22)}
+.patient-btn.cycle-selected strong{color:#ffe08a}
+.patient-btn.cycle-selected small{color:#fff0bf}
 .patient-btn strong{display:block;font-size:13px;overflow-wrap:anywhere}
 .patient-btn small{display:block;color:#b9d7e8;margin-top:4px}
 .detail{border:1px solid #31566b;background:#142b3a;border-radius:10px;padding:16px}
@@ -109,6 +114,23 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
   .therapy-card input[type="date"]{min-height:50px;padding:10px 8px}
   .therapy-card input[type="date"]::-webkit-calendar-picker-indicator{width:30px;height:30px;padding:5px;cursor:pointer}
 }
+
+.patient-row{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:left;width:100%;padding:12px 14px;border:1px solid var(--line,#dbe3ea);border-radius:12px;background:var(--card,#fff);margin:7px 0;color:inherit;cursor:pointer}.patient-row span{font-size:.9rem;opacity:.85}.history-item{padding:10px 0;border-bottom:1px solid var(--line,#dbe3ea);line-height:1.6}.history-item:last-child{border-bottom:0}
+
+.maintenance-checklist-panel{padding:16px!important}
+.maintenance-checklist{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}
+.maintenance-check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line,#35586b);border-radius:8px;background:rgba(255,255,255,.025);cursor:pointer}
+.maintenance-check-item input{width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#36a3d1}
+.maintenance-check-item .check-copy{flex:1;line-height:1.55}
+.maintenance-check-item .check-state{color:#74e0a0;font-size:.88em;white-space:nowrap}
+@media(min-width:760px){.maintenance-checklist{grid-template-columns:1fr 1fr}}
+
+/* Highlight the equipment location/state editor so RTs can find it quickly. */
+#editEquipmentLocation { border: 2px solid #f0c94a !important; background: rgba(240,201,74,.07) !important; border-radius: 10px; }
+#editEquipmentLocation > summary { cursor: pointer; color: #ffe16a; background: #3a3b24; border: 1px solid #f0c94a; border-radius: 8px; padding: 12px 14px; font-weight: 800; box-shadow: 0 0 0 2px rgba(240,201,74,.14), 0 0 14px rgba(240,201,74,.20); }
+#editEquipmentLocation[open] > summary { background: #5a4b1d; color: #fff3b0; }
+#editEquipmentLocation .filters { padding: 0 10px 10px; }
+#editEquipmentLocation .actions { padding: 0 10px 10px; }
 </style>
 </head>
 <body>
@@ -167,6 +189,42 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
       <section class="detail" id="patientDetail">
         <div class="empty">請先從 PT List 選擇病人。</div>
       </section>
+    </section>
+
+
+    <section id="maintenanceSection" class="hidden">
+      <div class="workspace-head"><div><h3>呼吸器一級保養卡｜設備主檔與保養紀錄</h3><p class="hint">60 台虛擬設備依本 HTML 現有的 8 個示範單位隨機配置。資料保存在目前瀏覽器的 localStorage；尚未連接 SharePoint。</p></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pill" id="equipmentCount">60 台設備</span><button class="search-ventilator-btn" id="openHospitalSearch" type="button">⌕ 全院搜尋呼吸器</button></div></div>
+      <div class="filters">
+        <div><label for="maintCategory">單位分類</label><select id="maintCategory"><option value="">全部分類</option></select></div>
+        <div><label for="maintUnit">照護單位</label><select id="maintUnit"><option value="">全部單位</option></select></div>
+        <div><label for="equipmentSearch">搜尋設備（編號／機型）</label><input id="equipmentSearch" placeholder="例如 8101、PB840、V60"></div>
+        <div><label for="equipmentStateFilter">設備狀態</label><select id="equipmentStateFilter"><option value="">全部狀態</option><option>使用中</option><option>備機</option><option>空機（無管）</option><option>維修中</option></select></div>
+      </div>
+      <div class="actions"><button class="secondary" id="exportMaintenance" type="button">匯出設備與保養 CSV</button></div>
+      <div id="maintenanceNotice" class="notice">點選設備卡片，或點選「每日／每週／每月／每季／儀器測試」旁的狀態，即可開啟該台機器的完整保養卡。資料目前儲存在此瀏覽器。</div>
+      <div id="equipmentList" class="patient-list"></div>
+      <section class="detail hidden" id="selectedEquipmentPanel" style="margin-top:14px"><div class="workspace-head"><div><h4 id="selectedEquipmentTitle">設備保養卡</h4><p class="hint" id="selectedEquipmentMeta"></p></div><button class="secondary" id="closeEquipmentPanel" type="button">關閉</button></div><details id="editEquipmentLocation" class="detail" style="margin:10px 0 14px"><summary>修改目前單位、位置與設備狀態</summary><div class="filters" style="margin-top:12px"><div><label for="editEquipmentCategory">單位分類</label><select id="editEquipmentCategory"></select></div><div><label for="editEquipmentUnit">照護單位</label><select id="editEquipmentUnit"></select></div><div><label for="editEquipmentLocationValue">位置／床號</label><input id="editEquipmentLocationValue" placeholder="例如 06PE-02、庫房、B1 RT room"></div><div><label for="editEquipmentState">設備狀態</label><select id="editEquipmentState"><option>使用中</option><option>備機</option><option>空機（無管）</option><option>維修中</option></select></div><div><label for="editEquipmentStaff">異動執行人員</label><input id="editEquipmentStaff" placeholder="請輸入 RT 姓名"></div></div><div class="actions"><button class="primary" id="saveEquipmentLocation" type="button">儲存設備位置與狀態</button></div></details><div id="equipmentCycleCards" class="patient-list"></div><div id="maintenanceEntry" class="detail hidden maintenance-checklist-panel" style="margin-top:12px"><div class="workspace-head"><div><h4 id="entryTitle">完整保養卡</h4><p class="hint" id="entrySubtitle">請依實際設備及院內核准 SOP 確認。</p></div></div><div id="maintenanceChecklist" class="maintenance-checklist"></div><div class="filters" style="margin-top:12px"><div id="runningHoursWrap" class="hidden"><label for="runningHours">Running hours（每月保養／儀器測試共用，必填）</label><input id="runningHours" type="number" min="0" step="0.1" placeholder="請輸入實際使用時數"></div><div><label for="maintenanceStaff">執行 RT（選填）</label><input id="maintenanceStaff" placeholder="若已登入可由系統帶入"></div></div><div class="actions"><button class="primary" id="saveMaintenance" type="button">✓ 確認完成並返回設備保養卡</button></div></div><details style="margin-top:12px"><summary>移機／變更目前位置（保留歷史）</summary><div class="filters"><div><label for="moveUnit">移機目的單位</label><select id="moveUnit"><option value="">選擇新單位</option></select></div><div><label for="moveLocation">新位置／床號</label><input id="moveLocation" placeholder="例如 06PE-02、庫房、B1 RT room"></div><div><label for="moveStaff">移機執行人員</label><input id="moveStaff" placeholder="請輸入執行人員"></div></div><button class="secondary" id="moveEquipment" type="button">確認移機</button></details><div class="history" id="maintenanceHistory" style="margin-top:14px">請先點選設備。</div></section>
+    </section>
+
+    <section id="ventilatorSearchSection" class="hidden">
+      <div class="workspace-head"><div><h3>全院搜尋呼吸器</h3><p class="hint">先選呼吸器機種，再選設備編碼，最後選擇動態／目的地。搜尋不受原本保養頁面的單位分類或照護單位篩選限制。</p></div><button class="secondary" id="backToMaintenanceFromSearch" type="button">返回呼吸器一級保養卡</button></div>
+      <div class="search-flow-note">操作順序：呼吸器機種 → 呼吸器編碼 → 動態。若選擇「醫療單位」，才會展開單位分類、照護單位及床號。</div>
+      <div class="filters">
+        <div><label for="searchVentilatorModel">第一層｜呼吸器機種</label><select id="searchVentilatorModel"><option value="">請選擇機種</option></select></div>
+        <div><label for="searchVentilatorCode">第二層｜呼吸器編碼</label><select id="searchVentilatorCode" disabled><option value="">請先選擇機種</option></select></div>
+        <div><label for="searchVentilatorAction">第三層｜動態／目的地</label><select id="searchVentilatorAction" disabled><option value="">請先選擇設備編碼</option><option value="送修">送修</option><option value="B1 RT">B1 RT</option><option value="16F RT">16F RT</option><option value="醫療單位">醫療單位</option></select></div>
+      </div>
+      <div id="searchMedicalDestination" class="search-destination-fields hidden">
+        <h4 style="margin:0 0 10px">醫療單位位置</h4>
+        <div class="filters">
+          <div><label for="searchDestinationCategory">單位分類</label><select id="searchDestinationCategory"><option value="">請選擇單位分類</option></select></div>
+          <div><label for="searchDestinationUnit">照護單位</label><select id="searchDestinationUnit" disabled><option value="">請先選擇單位分類</option></select></div>
+          <div><label for="searchDestinationBed">床號／位置</label><select id="searchDestinationBed" disabled><option value="">請先選擇照護單位</option></select></div>
+        </div>
+      </div>
+      <div id="hospitalSearchResult" class="search-result-card hidden"></div>
+      <div class="actions"><button class="primary" id="confirmVentilatorMovement" type="button" disabled>確認更新設備動態</button></div>
+      <div class="notice">原型說明：確認後會更新這台虛擬設備的目前位置／狀態，並新增移機歷史。正式上線前需接入 SharePoint／Microsoft Lists 與院內設備主檔。</div>
     </section>
 
     <section id="placeholderSection" class="hidden">
@@ -476,19 +534,21 @@ function addHistory(p){
 const topics={
  patients:{title:"病人清單 · PT List",text:"依照護單位篩選虛擬病人，查看收案主檔。"},
  ventilator:{title:"呼吸器使用病人紀錄表 · Patient Respirator Record",text:"請先從 PT List 選擇病人。"},
- maintenance:{title:"儀器管理 · Maintenance",text:"此主題預留儀器保養、檢查與維修紀錄功能。"},
+ maintenance:{title:"儀器管理 · Maintenance",text:"設備主檔、單位配置及保養紀錄。"},
  handover:{title:"交班工作 · Handover",text:"此主題預留交班內容、待辦事項及交班狀態。"},
  duty:{title:"值班紀錄 · Duty Log",text:"此主題預留臨床事件、故障排除與值班處理紀錄。"},
  schedule:{title:"人力管理 · Schedule",text:"此主題預留人力配置、排班與單位調度功能。"}
 };
 function openTopic(key){
  document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
- if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
+ if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("maintenanceSection").classList.add("hidden");$("ventilatorSearchSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
  $("patientSection").classList.add("hidden");
  $("ventilatorSection").classList.toggle("hidden",key!=="ventilator");
- $("placeholderSection").classList.toggle("hidden",key==="ventilator");
+ $("maintenanceSection").classList.toggle("hidden",key!=="maintenance");$("ventilatorSearchSection").classList.add("hidden");
+ $("placeholderSection").classList.toggle("hidden",key==="ventilator"||key==="maintenance");
  $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
- if(key!=="ventilator")$("placeholderText").textContent=topics[key].text;
+ if(key!=="ventilator"&&key!=="maintenance")$("placeholderText").textContent=topics[key].text;
+ if(key==="maintenance")renderMaintenance();
  if(key==="ventilator"&&selectedPatientId){const p=patients.find(x=>x.id===selectedPatientId);if(p)renderDetail(p);}
 }
 document.querySelectorAll(".topic").forEach(b=>b.addEventListener("click",()=>openTopic(b.dataset.topic)));
@@ -506,6 +566,96 @@ $("addPatientBtn").addEventListener("click",()=>{
 });
 searchInput.addEventListener("input",renderPatients);
 updateUnits();
+
+// --- Virtual equipment master + persistent browser-side maintenance records ---
+const modelGroups = [
+ ['PB840',8101],['Vela',8201],['R860',8301],['Engstrom',8401],['PB980',8501],['Savina 300',8601],['G5',8701],['C1',8801],['T1',8901],['AVEA',9001],['SLE 5K',9101],['SLE 6K',9201],['VN 500',9301],['3100',9401],['Dräger V800',9501],['NKV 550',9601],['Trilogy',7101],['Astral',7201],['V60',7301],['EVO',7401]
+];
+const equipmentKey='rtClinicalVirtualEquipmentV1', maintenanceKey='rtClinicalMaintenanceRecordsV1', movementKey='rtClinicalEquipmentMovementsV1';
+const flatUnits=unitGroups.flatMap(g=>g.units.map(u=>({category:g.category,unit:u.name,unitCode:u.code,beds:u.beds})));
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function loadJson(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
+function saveJson(key,val){try{localStorage.setItem(key,JSON.stringify(val));return true;}catch(e){alert('瀏覽器儲存失敗，可能是空間不足或瀏覽器限制。');return false;}}
+let equipment=loadJson(equipmentKey,null), maintenanceRecords=loadJson(maintenanceKey,[]), movementRecords=loadJson(movementKey,[]);
+if(!Array.isArray(equipment)||equipment.length!==60){
+ const assignments=shuffle(Array.from({length:60},(_,i)=>flatUnits[i%flatUnits.length]));
+ equipment=[]; let k=0;
+ modelGroups.forEach(([model,start])=>{for(let n=0;n<3;n++){const u=assignments[k++];const id=String(start+n);const bed=u.beds[(k+n)%u.beds.length];const state=['使用中','備機','空機（無管）','使用中','備機'][k%5];equipment.push({id,model,category:u.category,unit:u.unit,unitCode:u.unitCode,state,location:state==='使用中'?bed:(state==='備機'?'庫房':(n%2?'B1 RT room':'16F RT room')),createdAt:new Date().toISOString()});}});
+ saveJson(equipmentKey,equipment);
+}
+// Keep current unit/category/location consistent for devices stored in RT equipment rooms.
+equipment.forEach(e=>{
+ if(e.location==='B1 RT room'||e.location==='B1 RT') { e.category='B1 RT'; e.unit='B1 RT'; e.unitCode='B1-RT'; e.location='B1 RT room'; }
+ else if(e.location==='16F RT room'||e.location==='16F RT') { e.category='16F RT'; e.unit='16F RT'; e.unitCode='16F-RT'; e.location='16F RT room'; }
+});
+saveJson(equipmentKey,equipment);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const equipmentLocationGroups = [
+ {category:"B1 RT",units:[{name:"B1 RT",code:"B1-RT",beds:["B1 RT room"]}]},
+ {category:"16F RT",units:[{name:"16F RT",code:"16F-RT",beds:["16F RT room"]}]}
+];
+const maintenanceGroups = [...unitGroups,...equipmentLocationGroups];
+const maintenanceUnits = maintenanceGroups.flatMap(g=>g.units.map(u=>({category:g.category,unit:u.name,unitCode:u.code,beds:u.beds})));
+function initMaintenanceFilters(){const c=$('maintCategory'),u=$('maintUnit'),m=$('moveUnit'); if(c.options.length===1)maintenanceGroups.forEach(g=>c.add(new Option(g.category,g.category))); if(m.options.length===1)maintenanceUnits.forEach(x=>m.add(new Option(x.unit+'（'+x.unitCode+'）',x.unitCode))); if(!u.dataset.ready){updateMaintenanceUnits();u.dataset.ready='1';}}
+function updateMaintenanceUnits(){const c=$('maintCategory').value,u=$('maintUnit'),prior=u.value;u.innerHTML='<option value="">全部單位</option>';maintenanceUnits.filter(x=>!c||x.category===c).forEach(x=>u.add(new Option(x.unit+'（'+x.unitCode+'）',x.unitCode)));if([...u.options].some(o=>o.value===prior))u.value=prior;}
+function filteredEquipment(){const c=$('maintCategory').value,uc=$('maintUnit').value,q=$('equipmentSearch').value.trim().toLowerCase(),st=$('equipmentStateFilter').value;return equipment.filter(e=>(!c||e.category===c)&&(!uc||e.unitCode===uc)&&(!q||(e.id+' '+e.model+' '+e.category+' '+e.unit+' '+e.unitCode+' '+e.location).toLowerCase().includes(q))&&(!st||e.state===st));}
+function latestCycle(eid,cycle){return maintenanceRecords.filter(r=>r.equipmentId===eid&&r.cycle===cycle).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))[0];}
+function cycleStatus(eid,cycle){const r=latestCycle(eid,cycle);if(!r)return '尚未紀錄';if(r.status!=='完成')return r.status;const d=new Date(r.date+'T12:00:00'),now=new Date();if(cycle==='每日'&&d.toDateString()!==now.toDateString())return '待保養';if(cycle==='每週'){const start=new Date(now);start.setDate(now.getDate()-((now.getDay()+6)%7));start.setHours(0,0,0,0);if(d<start)return '待保養';}if(cycle==='每月'&&(d.getFullYear()!==now.getFullYear()||d.getMonth()!==now.getMonth()))return '待保養';if(cycle==='每季'&&(d.getFullYear()!==now.getFullYear()||Math.floor(d.getMonth()/3)!==Math.floor(now.getMonth()/3)))return '待保養';return r.status;}
+let selectedEquipmentId='';let selectedCycle='';
+function renderMaintenance(){initMaintenanceFilters();const list=$('equipmentList'),items=filteredEquipment();$('equipmentCount').textContent=equipment.length+' 台設備';
+ list.innerHTML=items.length?items.map(e=>'<div class="patient-btn equipment-card" role="button" tabindex="0" data-eid="'+esc(e.id)+'"><strong>'+esc(e.model)+'｜'+esc(e.id)+'</strong><small>目前單位：'+esc(e.unitCode)+'｜'+esc(e.unit)+'<br>位置：'+esc(e.location)+'<br>狀態：'+esc(e.state)+'</small><div class="equipment-cycle-line">'+['每日','每週','每月','每季','儀器測試'].map(c=>c+'：<button type="button" class="cycle-status-button" data-cycle="'+esc(c)+'" data-eid="'+esc(e.id)+'">'+esc(cycleStatus(e.id,c))+'</button>').join('　')+'</div></div>').join(''):'<div class="empty">沒有符合條件的設備。</div>';
+ list.querySelectorAll('.cycle-status-button').forEach(b=>{if(b.textContent.trim()==='完成')b.classList.add('is-complete');});list.querySelectorAll('.equipment-card').forEach(b=>b.addEventListener('click',ev=>{if(ev.target.closest('.cycle-status-button'))return;openEquipmentPanel(b.dataset.eid);}));list.querySelectorAll('.cycle-status-button').forEach(b=>b.addEventListener('click',ev=>{ev.stopPropagation();openEquipmentPanel(b.dataset.eid,b.dataset.cycle);}));if(selectedEquipmentId&&equipment.some(e=>e.id===selectedEquipmentId))renderSelectedEquipment();}
+function openEquipmentPanel(id,cycle){selectedEquipmentId=id;selectedCycle=cycle||'';$('selectedEquipmentPanel').classList.remove('hidden');$('maintenanceEntry').classList.add('hidden');renderSelectedEquipment();$('selectedEquipmentPanel').scrollIntoView({behavior:'smooth',block:'start'});if(cycle)openMaintenanceEntry(cycle);}
+function renderSelectedEquipment(){const e=equipment.find(x=>x.id===selectedEquipmentId);if(!e)return;$('selectedEquipmentTitle').textContent=e.model+'｜設備編號 '+e.id;$('selectedEquipmentMeta').textContent='目前單位：'+e.category+'／'+e.unit+'（'+e.unitCode+'）｜位置：'+e.location+'｜狀態：'+e.state; populateEquipmentEditForm(e); $('equipmentCycleCards').innerHTML=['每日','每週','每月','每季','儀器測試'].map(c=>'<button type="button" class="patient-btn" data-open-cycle="'+esc(c)+'"><strong>'+esc(c)+'保養卡</strong><small>目前狀態：'+esc(cycleStatus(e.id,c))+'</small><small>點選開啟完整保養卡／新增紀錄</small></button>').join('');$('equipmentCycleCards').querySelectorAll('[data-open-cycle]').forEach(b=>b.addEventListener('click',()=>openMaintenanceEntry(b.dataset.openCycle)));renderMaintenanceHistory();}
+const maintenanceTemplates={
+'每日':['確認呼吸器外觀清潔與完整','確認警報聲音、警報功能及設定值','確認蒸餾水／加濕器水量與功能','檢查並移除管路積水','確認低分鐘通氣量警報及無菌物品／耗材','確認管路脫落警報功能'],
+'每週':['依院內 SOP 更換呼吸器管路及加水系統','檢查管路與系統是否漏水、漏氣','檢查流量感測器、接頭及相關配件','清潔／檢查過濾網並依規範更換','檢查電源線、插頭及外觀','記錄下次管路更換日期'],
+'每月':['確認氣體濃度測量需求及設備狀態','完成適用的氣體濃度測量（依機型／SOP）','記錄測量日期與結果','確認保養結果並完成覆核'],
+'每季':['依機型與 SOP 檢查／更換過濾器','執行該機型適用的定期測試','確認測試結果、警報及設備狀態','記錄異常並依流程通報／處理'],
+'儀器測試':['確認設備型號與測試程序相符','執行該機型適用的自我測試／系統檢查','確認 Flow／O₂ sensor 等適用感測器測試結果','確認 Tightness／呼吸迴路測試（若機型適用）','確認測試結果與設備可用狀態']
+};
+const monthlyTestCombined=[...new Set([...(maintenanceTemplates['每月']||[]),...(maintenanceTemplates['儀器測試']||[])])];
+function getMaintenanceItems(cycle){return (cycle==='每月'||cycle==='儀器測試')?monthlyTestCombined:(maintenanceTemplates[cycle]||[]);}
+function openMaintenanceEntry(cycle){selectedCycle=cycle;$('maintenanceEntry').classList.remove('hidden');const e=equipment.find(x=>x.id===selectedEquipmentId);$('entryTitle').textContent=(e?e.model+'｜設備編號 '+e.id+'｜':'')+((cycle==='每月'||cycle==='儀器測試')?'每月保養＋儀器測試合併保養卡':cycle+'保養卡');$('entrySubtitle').textContent='預設項目皆為「完成」。請依該機型及院內核准 SOP 確認後送出。';const needsHours=cycle==='每月'||cycle==='儀器測試';$('runningHoursWrap').classList.toggle('hidden',!needsHours);$('runningHours').required=needsHours;$('runningHours').value='';$('maintenanceStaff').value='';$('equipmentCycleCards').querySelectorAll('[data-open-cycle]').forEach(b=>b.classList.toggle('cycle-selected',b.dataset.openCycle===cycle));$('maintenanceChecklist').innerHTML=getMaintenanceItems(cycle).map((item,i)=>'<label class="maintenance-check-item"><input type="checkbox" checked data-check-index="'+i+'"><span class="check-copy">'+esc(item)+'</span><span class="check-state">完成</span></label>').join('');$('maintenanceChecklist').querySelectorAll('input[type=checkbox]').forEach(cb=>cb.addEventListener('change',()=>{cb.closest('.maintenance-check-item').querySelector('.check-state').textContent=cb.checked?'完成':'未完成';}));}
+function initEquipmentEditForm(){const c=$('editEquipmentCategory'),u=$('editEquipmentUnit');if(!c.dataset.ready){c.innerHTML=maintenanceGroups.map(g=>'<option value="'+esc(g.category)+'">'+esc(g.category)+'</option>').join('');c.dataset.ready='1';}updateEquipmentEditUnits();c.onchange=updateEquipmentEditUnits;}
+function updateEquipmentEditUnits(){const category=$('editEquipmentCategory').value,u=$('editEquipmentUnit'),prior=u.value;u.innerHTML=maintenanceUnits.filter(x=>x.category===category).map(x=>'<option value="'+esc(x.unitCode)+'">'+esc(x.unit+'（'+x.unitCode+'）')+'</option>').join('');if([...u.options].some(o=>o.value===prior))u.value=prior;}
+function getLoggedInRTName(){
+ const candidates=['currentUser','loggedInUser','rtCurrentUser','currentRTUser','userProfile','loginUser','authUser'];
+ for(const key of candidates){
+  try{const raw=localStorage.getItem(key);if(!raw)continue;let v;try{v=JSON.parse(raw)}catch(_){v=raw}if(typeof v==='string'&&v.trim())return v.trim();if(v&&typeof v==='object'){const name=v.displayName||v.name||v.fullName||v.staffName||v.employeeName||v.username||v.userName;if(name)return String(name).trim();}}
+  catch(_){}
+ }
+ const globals=[window.currentUser,window.loggedInUser,window.rtCurrentUser,window.userProfile];
+ for(const v of globals){if(typeof v==='string'&&v.trim())return v.trim();if(v&&typeof v==='object'){const name=v.displayName||v.name||v.fullName||v.staffName||v.employeeName||v.username||v.userName;if(name)return String(name).trim();}}
+ const el=document.querySelector('[data-current-user],#currentUserName,#loggedInUser,.current-user-name');if(el&&el.textContent.trim())return el.textContent.trim();
+ return '';
+}
+function populateEquipmentEditForm(e){initEquipmentEditForm();$('editEquipmentCategory').value=e.category;updateEquipmentEditUnits();$('editEquipmentUnit').value=e.unitCode;$('editEquipmentLocationValue').value=e.location;$('editEquipmentState').value=e.state;const staff=$('editEquipmentStaff');const loggedIn=getLoggedInRTName();staff.value=loggedIn||'';staff.placeholder=loggedIn?'已由登入資訊自動帶入':'登入資訊尚未提供，請先完成系統登入';}
+function saveEquipmentLocationNow(){const e=equipment.find(x=>x.id===selectedEquipmentId);if(!e)return;const unit=maintenanceUnits.find(x=>x.unitCode===$('editEquipmentUnit').value),loc=$('editEquipmentLocationValue').value.trim(),state=$('editEquipmentState').value,staff=$('editEquipmentStaff').value.trim();if(!unit||unit.category!==$('editEquipmentCategory').value){alert('請選擇相符的單位分類與照護單位。');return;}if(!loc){alert('請輸入目前位置或床號。');return;}if(!staff){alert('請輸入異動執行人員。');return;}const old={category:e.category,unit:e.unit,unitCode:e.unitCode,location:e.location,state:e.state};if(old.category===unit.category&&old.unitCode===unit.unitCode&&old.location===loc&&old.state===state){alert('目前資料沒有變更。');return;}e.category=unit.category;e.unit=unit.unit;e.unitCode=unit.unitCode;e.location=loc;e.state=state;const now=new Date().toISOString();if(old.category!==e.category||old.unitCode!==e.unitCode||old.location!==e.location||old.state!==e.state){movementRecords.push({movementId:'MV-'+Date.now(),equipmentId:e.id,model:e.model,fromCategory:old.category,fromUnit:old.unit,fromUnitCode:old.unitCode,fromLocation:old.location,fromState:old.state,toCategory:e.category,toUnit:e.unit,toUnitCode:e.unitCode,toLocation:e.location,toState:e.state,staff,date:now,createdAt:now,source:'設備保養卡位置／狀態修改'});}if(saveJson(equipmentKey,equipment)&&saveJson(movementKey,movementRecords)){$("maintCategory").value=e.category;updateMaintenanceUnits();$("maintUnit").value=e.unitCode;renderMaintenance();renderSelectedEquipment();populateEquipmentEditForm(e);alert('已更新設備目前單位、位置與狀態；清單已跳轉至新單位。');}}
+function renderMaintenanceHistory(){const id=selectedEquipmentId,e=equipment.find(x=>x.id===id),root=$('maintenanceHistory');if(!e){root.innerHTML='請選擇設備。';return;}const rows=maintenanceRecords.filter(r=>r.equipmentId===id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));const moves=movementRecords.filter(r=>r.equipmentId===id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));root.innerHTML='<p><strong>'+esc(e.id)+'｜'+esc(e.model)+'</strong>　'+esc(e.category)+'／'+esc(e.unit)+'／'+esc(e.location)+'　狀態：'+esc(e.state)+'</p>'+(moves.length?'<h5>移機歷程</h5>'+moves.map(m=>'<div class="history-item"><strong>'+esc(m.date.slice(0,10))+'｜移機</strong><div>'+esc(m.fromUnit)+'／'+esc(m.fromLocation)+' → '+esc(m.toUnit)+'／'+esc(m.toLocation)+'</div><div>執行人員：'+esc(m.staff)+'</div></div>').join(''):'<div>尚無移機紀錄。</div>')+(rows.length?rows.map(r=>'<div class="history-item"><strong>'+esc(r.date)+'｜'+esc(r.cycle)+'｜'+esc(r.status)+'</strong><div>執行 RT：'+esc(r.staff)+'　'+(r.runningHours!==''&&r.runningHours!=null?'Running hours：'+esc(r.runningHours):'')+'</div><div>'+esc(r.notes||'無備註')+'</div><div>'+esc((r.checks||[]).map(c=>c.item+'：'+c.result).join('；'))+'</div></div>').join(''):'<div class="empty">此設備尚無保養紀錄。</div>');}
+function saveMaintenanceRecord(){const id=selectedEquipmentId,cycle=selectedCycle,staff=$('maintenanceStaff').value.trim()||'RT（未填姓名）',hours=$('runningHours').value;if(!id){alert('請先選擇設備');return;}if((cycle==='每月'||cycle==='儀器測試')&&(hours===''||!Number.isFinite(Number(hours))||Number(hours)<0)){alert('每月保養／儀器測試合併保養必須手動輸入呼吸器使用時數 Running hours');return;}const checkboxes=[...$('maintenanceChecklist').querySelectorAll('input[type=checkbox]')];if(checkboxes.some(cb=>!cb.checked)){if(!confirm('仍有項目未勾選完成，仍要儲存這筆保養紀錄嗎？'))return;}const items=getMaintenanceItems(cycle);const checks=items.map((item,i)=>({item,result:checkboxes[i]&&checkboxes[i].checked?'完成':'未完成'}));const device=equipment.find(e=>e.id===id);const record={recordId:'MR-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),equipmentId:id,model:device.model,unitCode:device.unitCode,unit:device.unit,cycle,date:new Date().toISOString().slice(0,10),staff,runningHours:(cycle==='每月'||cycle==='儀器測試')?Number(hours):'',checks,status:checks.every(c=>c.result==='完成')?'完成':'部分完成',notes:'原型測試紀錄；實際執行須依機型及院內核准 SOP 確認。',createdAt:new Date().toISOString()};maintenanceRecords.push(record);if(saveJson(maintenanceKey,maintenanceRecords)){renderMaintenance();selectedEquipmentId=id;renderSelectedEquipment();$('maintenanceEntry').classList.add('hidden');$('maintenanceEntry').scrollIntoView({behavior:'smooth',block:'nearest'});alert('已新增保養紀錄，並返回此設備的保養卡，可繼續選擇其他保養週期。');}} 
+function moveEquipmentNow(){const id=selectedEquipmentId,newCode=$('moveUnit').value,loc=$('moveLocation').value.trim(),staff=$('moveStaff').value.trim(),e=equipment.find(x=>x.id===id),u=maintenanceUnits.find(x=>x.unitCode===newCode);if(!e||!u){alert('請選擇設備與目的單位');return;}if(!loc||!staff){alert('請填寫新位置／床號及移機執行人員');return;}if(e.unitCode===u.unitCode&&e.location===loc){alert('設備已在相同單位與位置');return;}const old={unit:e.unit,unitCode:e.unitCode,location:e.location};e.category=u.category;e.unit=u.unit;e.unitCode=u.unitCode;e.location=loc;movementRecords.push({movementId:'MV-'+Date.now(),equipmentId:id,model:e.model,fromUnit:old.unit,fromUnitCode:old.unitCode,fromLocation:old.location,toUnit:e.unit,toUnitCode:e.unitCode,toLocation:loc,staff,date:new Date().toISOString(),createdAt:new Date().toISOString()});if(saveJson(equipmentKey,equipment)&&saveJson(movementKey,movementRecords)){renderMaintenance();selectedEquipmentId=id;renderSelectedEquipment();alert('已更新設備目前位置並新增移機歷程。');}}
+function exportMaintenanceCsv(){const rows=[['設備編號','機型','單位分類','單位代碼','目前單位','設備狀態','位置'],...equipment.map(e=>[e.id,e.model,e.category,e.unitCode,e.unit,e.state,e.location])];rows.push([],['移機編號','設備編號','機型','原單位','原單位代碼','原位置','新單位','新單位代碼','新位置','執行人員','時間'],...movementRecords.map(r=>[r.movementId,r.equipmentId,r.model,r.fromUnit,r.fromUnitCode,r.fromLocation,r.toUnit,r.toUnitCode,r.toLocation,r.staff,r.date]));rows.push([],['保養紀錄編號','設備編號','機型','日期','保養類型','執行RT','Running hours','狀態','檢查項目','備註'],...maintenanceRecords.map(r=>[r.recordId,r.equipmentId,r.model,r.date,r.cycle,r.staff,r.runningHours,r.status,(r.checks||[]).map(c=>c.item+':'+c.result).join(' | '),r.notes]));const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='RT_設備主檔與保養紀錄.csv';a.click();URL.revokeObjectURL(url);}
+$('maintCategory').addEventListener('change',()=>{updateMaintenanceUnits();renderMaintenance();});$('maintUnit').addEventListener('change',renderMaintenance);$('equipmentSearch').addEventListener('input',renderMaintenance);$('equipmentStateFilter').addEventListener('change',renderMaintenance);$('closeEquipmentPanel').addEventListener('click',()=>{$('selectedEquipmentPanel').classList.add('hidden');selectedEquipmentId='';selectedCycle='';});$('saveMaintenance').addEventListener('click',saveMaintenanceRecord);$('exportMaintenance').addEventListener('click',exportMaintenanceCsv);$('moveEquipment').addEventListener('click',moveEquipmentNow);
+
+
+// 全院呼吸器搜尋與動態／移機流程
+function openHospitalSearch(){
+  $("patientSection").classList.add("hidden");$("ventilatorSection").classList.add("hidden");$("maintenanceSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("ventilatorSearchSection").classList.remove("hidden");
+  const model=$("searchVentilatorModel");if(model.options.length===1){[...new Set(equipment.map(e=>e.model))].sort((a,b)=>a.localeCompare(b,"zh-Hant")).forEach(m=>model.add(new Option(m,m)));}
+  const cat=$("searchDestinationCategory");if(cat.options.length===1)unitGroups.forEach(g=>cat.add(new Option(g.category,g.category)));
+  renderHospitalSearchResult();
+}
+function updateSearchCodes(){const m=$("searchVentilatorModel").value,code=$("searchVentilatorCode");code.innerHTML='<option value="">請選擇設備編碼</option>';equipment.filter(e=>!m||e.model===m).sort((a,b)=>Number(a.id)-Number(b.id)).forEach(e=>code.add(new Option(e.id+'｜'+e.model+'｜目前：'+e.unitCode+'／'+e.location,e.id)));code.disabled=!m;$("searchVentilatorAction").value='';$("searchVentilatorAction").disabled=true;$("searchMedicalDestination").classList.add("hidden");$("searchDestinationUnit").innerHTML='<option value="">請先選擇單位分類</option>';$("searchDestinationUnit").disabled=true;$("searchDestinationBed").innerHTML='<option value="">請先選擇照護單位</option>';$("searchDestinationBed").disabled=true;renderHospitalSearchResult();}
+function updateSearchAction(){const has=!!$("searchVentilatorCode").value;$("searchVentilatorAction").disabled=!has;$("searchMedicalDestination").classList.toggle("hidden",$("searchVentilatorAction").value!=="醫療單位");if($("searchVentilatorAction").value==="醫療單位")updateSearchDestinationUnits();renderHospitalSearchResult();}
+function updateSearchDestinationUnits(){const cat=$("searchDestinationCategory").value,u=$("searchDestinationUnit");u.innerHTML='<option value="">請選擇照護單位</option>';flatUnits.filter(x=>!cat||x.category===cat).forEach(x=>u.add(new Option(x.unit+'（'+x.unitCode+'）',x.unitCode)));u.disabled=!cat;$("searchDestinationBed").innerHTML='<option value="">請先選擇照護單位</option>';$("searchDestinationBed").disabled=true;renderHospitalSearchResult();}
+function updateSearchDestinationBeds(){const code=$("searchDestinationUnit").value,u=flatUnits.find(x=>x.unitCode===code),b=$("searchDestinationBed");b.innerHTML='<option value="">請選擇床號／位置</option>';if(u)u.beds.forEach(bed=>b.add(new Option(bed,bed)));b.disabled=!u;renderHospitalSearchResult();}
+function renderHospitalSearchResult(){const id=$("searchVentilatorCode").value,e=equipment.find(x=>x.id===id),action=$("searchVentilatorAction").value,box=$("hospitalSearchResult"),btn=$("confirmVentilatorMovement");if(!e){box.classList.add("hidden");btn.disabled=true;return;}box.classList.remove("hidden");box.innerHTML='<strong>'+esc(e.model)+'｜設備編碼 '+esc(e.id)+'</strong><div>目前單位：'+esc(e.category)+'／'+esc(e.unit)+'（'+esc(e.unitCode)+'）</div><div>目前位置：'+esc(e.location)+'｜狀態：'+esc(e.state)+'</div><div>選擇動態：'+esc(action||'尚未選擇')+'</div>';
+ let valid=!!action;if(action==='醫療單位')valid=!!($("searchDestinationCategory").value&&$("searchDestinationUnit").value&&$("searchDestinationBed").value);btn.disabled=!valid;}
+function confirmHospitalMovement(){const id=$("searchVentilatorCode").value,e=equipment.find(x=>x.id===id),action=$("searchVentilatorAction").value;if(!e||!action)return;let newCategory=e.category,newUnit=e.unit,newCode=e.unitCode,newLoc=action,newState=e.state;if(action==='送修'){newLoc='送修';newState='維修中';}else if(action==='B1 RT'||action==='16F RT'){newCategory=action;newUnit=action;newCode=action==='B1 RT'?'B1-RT':'16F-RT';newLoc=action+' room';newState='備機';}else if(action==='醫療單位'){const u=flatUnits.find(x=>x.unitCode===$("searchDestinationUnit").value);if(!u)return;newCategory=u.category;newUnit=u.unit;newCode=u.unitCode;newLoc=$("searchDestinationBed").value;newState='使用中';}
+ if(e.unitCode===newCode&&e.location===newLoc&&e.state===newState){alert('設備目前已是這個位置與狀態。');return;}const from={category:e.category,unit:e.unit,unitCode:e.unitCode,location:e.location,state:e.state};e.category=newCategory;e.unit=newUnit;e.unitCode=newCode;e.location=newLoc;e.state=newState;movementRecords.push({movementId:'MV-'+Date.now(),equipmentId:id,model:e.model,fromUnit:from.unit,fromUnitCode:from.unitCode,fromLocation:from.location,toUnit:e.unit,toUnitCode:e.unitCode,toLocation:newLoc,staff:'全院搜尋動態更新',date:new Date().toISOString(),createdAt:new Date().toISOString(),action,fromState:from.state,toState:newState});if(saveJson(equipmentKey,equipment)&&saveJson(movementKey,movementRecords)){alert('已更新設備動態並保留歷史紀錄。');renderHospitalSearchResult();}}
+$("saveEquipmentLocation").addEventListener("click",saveEquipmentLocationNow);$("openHospitalSearch").addEventListener("click",openHospitalSearch);$("backToMaintenanceFromSearch").addEventListener("click",()=>{ $("ventilatorSearchSection").classList.add("hidden");$("maintenanceSection").classList.remove("hidden");renderMaintenance();});$("searchVentilatorModel").addEventListener("change",updateSearchCodes);$("searchVentilatorCode").addEventListener("change",()=>{updateSearchAction();});$("searchVentilatorAction").addEventListener("change",updateSearchAction);$("searchDestinationCategory").addEventListener("change",updateSearchDestinationUnits);$("searchDestinationUnit").addEventListener("change",updateSearchDestinationBeds);$("searchDestinationBed").addEventListener("change",renderHospitalSearchResult);$("confirmVentilatorMovement").addEventListener("click",confirmHospitalMovement);
+
 </script>
 </body>
 </html>
