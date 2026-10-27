@@ -131,6 +131,78 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 #editEquipmentLocation[open] > summary { background: #5a4b1d; color: #fff3b0; }
 #editEquipmentLocation .filters { padding: 0 10px 10px; }
 #editEquipmentLocation .actions { padding: 0 10px 10px; }
+
+#dutyRuleList .patient-btn { text-align:left; }
+.duty-rule-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.duty-rule-tag { display:inline-block; padding:3px 8px; border-radius:6px; background:#244b63; margin:2px 4px 2px 0; font-size:12px; }
+.duty-rule-inactive { opacity:.58; border-style:dashed; }
+
+
+#dutyEntryFlow .selected-duty-banner{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:#f0448b;color:#fff;border:2px solid #ffb3d0;border-radius:12px;padding:14px;margin:12px 0;font-size:clamp(18px,2.5vw,30px);font-weight:800;text-align:center}
+#dutyEntryFlow .selected-duty-banner span{display:block;font-size:12px;font-weight:600;opacity:.9}
+#dutyEntryFlow .selected-duty-banner strong{display:block;margin-top:4px}
+@media(max-width:650px){#dutyEntryFlow .selected-duty-banner{grid-template-columns:1fr;font-size:22px}}
+
+
+/* Duty Log visual refinements requested 2026-10-27 */
+#dutyAlertPanel, #dutySection .duty-warning, #dutySection .notice[style*="border-color:#e6b94f"]{
+  background:#f0448b !important; color:#fff !important; border:2px solid #ffb3d0 !important;
+  border-radius:12px !important; padding:16px 20px !important; font-size:16px !important;
+}
+#dutyAlertPanel strong, #dutyAlertPanel li{color:#fff !important;}
+#dutySection .notice[style*="border-color:#d5a63b"]{background:#f0448b !important;color:#fff !important;border-color:#ffb3d0 !important;}
+#dutySection .selected-duty-banner{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:#f0448b;color:#fff;
+ border:2px solid #ffb3d0;border-radius:12px;padding:14px;margin:12px 0;font-size:clamp(20px,2.7vw,34px);
+ font-weight:800;text-align:center;align-items:center;
+}
+#dutySection .selected-duty-banner>div+div{border-left:2px solid rgba(255,255,255,.8)}
+#dutySection .selected-duty-banner span{display:block;font-size:13px;font-weight:600;opacity:.95}
+#dutySection .selected-duty-banner strong{display:block;margin-top:4px}
+#dutySection #dutyRuleList{display:none}
+#dutySection .filters:has(#dutyDateType), #dutySection .filters:has(#ruleDateType){display:none}
+#dutySection #exportDutyRules, #dutySection #resetDutyRules{display:none}
+@media(max-width:650px){
+ #dutySection .selected-duty-banner{grid-template-columns:1fr;font-size:24px}
+ #dutySection .selected-duty-banner>div+div{border-left:0;border-top:1px solid rgba(255,255,255,.8);padding-top:8px}
+}
+
+
+/* Stage 2 Duty Log form */
+#dutyRecordForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+#dutyRecordForm>div{min-width:0}
+#dutyRecordForm label,#dutyRecordForm legend{display:block;font-weight:700;margin-bottom:6px}
+#dutyRecordForm input:not([type=radio]),#dutyRecordForm select,#dutyRecordForm textarea{width:100%;background:#0c1923;color:#f3f7fb;border:1px solid #47758e;border-radius:7px;padding:10px}
+#dutyRecordForm fieldset{border:1px solid #31566b;border-radius:8px;padding:12px}
+#dutyRecordForm .inline-choice{display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0;font-weight:500}
+#dutyRecordForm .full{grid-column:1/-1}
+#dutySavedRecords{overflow-x:auto}
+#dutySavedRecords table{width:100%;border-collapse:collapse;font-size:13px}
+#dutySavedRecords th,#dutySavedRecords td{border:1px solid #31566b;padding:8px;text-align:left;vertical-align:top}
+@media(max-width:650px){#dutyRecordForm{grid-template-columns:1fr}#dutyRecordForm .full{grid-column:auto}}
+
+
+/* Mobile-first Duty Log usability updates */
+#dutyRecordShiftBanner.selected-duty-banner{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px 8px;margin:6px 0;font-size:clamp(13px,3.5vw,18px);border-width:1px}
+#dutyRecordShiftBanner .selected-duty-banner span{font-size:10px}
+#dutyRecordShiftBanner .selected-duty-banner strong{margin-top:2px}
+#dutyRecordForm{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+#dutyRecordForm .full,#dutyRecordForm fieldset.full{grid-column:1/-1}
+#dutyRecordForm label,#dutyRecordForm legend{font-size:13px;margin-bottom:4px}
+#dutyRecordForm input:not([type=radio]),#dutyRecordForm select,#dutyRecordForm textarea{padding:9px;font-size:14px;min-width:0}
+#dutyRecordForm .time-entry-row{display:flex;gap:6px;align-items:stretch}
+#dutyRecordForm .time-entry-row input{flex:1;min-width:0}
+#dutyRecordForm .time-entry-row button{white-space:nowrap;padding:7px 9px;font-size:12px}
+#dutyDraftList .draft-card{border:1px solid #47758e;border-radius:8px;padding:10px;margin:8px 0;background:#102b3a}
+#dutyDraftList .draft-card p{margin:4px 0;font-size:13px}
+#dutySavedRecords .record-actions{display:flex;gap:5px;flex-wrap:wrap}
+@media(max-width:600px){
+ #dutyRecordForm{grid-template-columns:1fr;gap:10px}
+ #dutyRecordForm .full,#dutyRecordForm fieldset.full{grid-column:1}
+ #dutyRecordShiftBanner.selected-duty-banner{font-size:13px}
+ #dutyRecordShiftBanner .selected-duty-banner span{font-size:9px}
+}
+
 </style>
 </head>
 <body>
@@ -225,6 +297,90 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
       <div id="hospitalSearchResult" class="search-result-card hidden"></div>
       <div class="actions"><button class="primary" id="confirmVentilatorMovement" type="button" disabled>確認更新設備動態</button></div>
       <div class="notice">原型說明：確認後會更新這台虛擬設備的目前位置／狀態，並新增移機歷史。正式上線前需接入 SharePoint／Microsoft Lists 與院內設備主檔。</div>
+    </section>
+
+
+    <section id="dutySection" class="hidden">
+      <div id="dutyEntryFlow">
+        <div class="workspace-head">
+          <div><h3>Duty Log｜值班紀錄入口</h3>
+          <p class="hint">請先選擇日期類型、班別與組別，確認當班規則後才能進入值班紀錄。</p></div>
+          <span class="pill">先選班別，再開始紀錄</span>
+        </div>
+        <div class="filters">
+          <div><label for="entryDateType">日期類型</label><select id="entryDateType"><option value="">請先選日期類型</option></select></div>
+          <div><label for="entryShift">班別</label><select id="entryShift" disabled><option value="">請先選日期類型</option></select></div>
+          <div><label for="entryGroup">組別</label><select id="entryGroup" disabled><option value="">請先選班別</option></select></div>
+        </div>
+        <div class="actions"><button class="primary" id="confirmDutyEntry" type="button">確認班別與組別</button></div>
+        <div id="entryRulePreview" class="detail hidden"></div>
+        <div id="dutyAlertPanel" class="notice hidden" style="border-color:#e6b94f;background:#382e17;color:#ffecb2"></div>
+        <div class="actions hidden" id="enterDutyRecordActions"><button class="primary" id="enterDutyRecord" type="button">進入值班紀錄</button><button class="secondary" id="changeDutyEntry" type="button">重新選擇</button></div>
+        <section id="dutyRecordPlaceholder" class="detail hidden" style="margin-top:14px">
+          <div class="workspace-head"><div><h3>值班紀錄｜Duty Log</h3><p class="hint">離開網頁前的未完成表單會自動暫存於此瀏覽器，可返回後接續填寫。</p></div><button class="secondary" id="backToDutyRules" type="button">返回當班規則</button></div>
+          <div id="dutyDraftNotice" class="notice" style="border-color:#f0448b;background:#3b1830;color:#fff;margin:12px 0">尚無未完成的草稿。</div>
+          <div id="dutyRecordShiftBanner" class="selected-duty-banner"></div>
+          <p id="dutyShiftCreatedAt" class="hint">本次值班紀錄工作階段建立時間：尚未建立</p>
+          <div class="notice" style="border-color:#e6b94f;background:#382e17;color:#ffecb2">目前為瀏覽器本機測試版，紀錄儲存在此瀏覽器；尚未連接醫院 REDCap 或共用資料庫。請勿輸入可識別真實病人的個資。</div>
+          <form id="dutyRecordForm" class="form-grid">
+            <div><label for="recordStaff">處理人員</label><input id="recordStaff" required placeholder="請輸入值班 RT 姓名（正式版由登入資訊帶入）"></div>
+            <div><label for="recordEmployeeId">員工編號</label><input id="recordEmployeeId" placeholder="正式版由登入資訊帶入"></div>
+            <div><label for="recordCallTime">接聽／事件時間</label><div class="time-entry-row"><input id="recordCallTime" type="datetime-local" required><button class="secondary" id="useCurrentCallTime" type="button">目前時間</button></div></div>
+            <fieldset class="full"><legend>值班處置類型（必選）</legend>
+              <label class="inline-choice"><input type="radio" name="recordType" value="例行作業" required> 例行作業</label>
+              <label class="inline-choice"><input type="radio" name="recordType" value="來電處置"> 來電處置</label>
+              <label class="inline-choice"><input type="radio" name="recordType" value="臨時處置"> 臨時處置</label>
+              <label class="inline-choice"><input type="radio" name="recordType" value="轉接"> 轉接</label>
+            </fieldset>
+            <div><label for="recordProblem">處理問題</label><select id="recordProblem" required><option value="">請選擇處理問題</option></select></div>
+            <div><label for="recordDetailProblem">問題／警報細項</label><select id="recordDetailProblem"><option value="">請先選處理問題</option></select></div>
+            <div id="recordOtherProblemWrap" class="hidden"><label for="recordOtherProblem">其他問題（請輸入原因）</label><input id="recordOtherProblem" placeholder="請輸入其他問題"></div>
+            <div id="recordInformWrap" class="hidden"><label for="recordInform">告知人員</label><select id="recordInform"><option value="">請選擇</option><option>醫生</option><option>護理師</option><option>書記</option><option>放射師</option><option>總值下</option><option>其他</option></select></div>
+            <div id="recordInformOtherWrap" class="hidden"><label for="recordInformOther">其他告知人員</label><input id="recordInformOther" placeholder="請輸入人員"></div>
+            <div id="recordTransferWrap" class="hidden"><label for="recordTransfer">轉接給誰</label><select id="recordTransfer"><option value="">請選擇</option><option>內科呼吸治療師</option><option>外科呼吸治療師</option><option>兒科呼吸治療師</option><option>總院呼吸治療師</option></select></div>
+            <div><label for="recordArrival">到場處理</label><select id="recordArrival" required><option value="">請選擇</option><option>是</option><option>否</option></select></div>
+            <div><label for="recordPatientId">病歷號（測試請勿填真實個資）</label><input id="recordPatientId" placeholder="測試資料可留空或使用虛構編號"></div>
+            <div><label for="recordUnitBed">單位床號</label><input id="recordUnitBed" placeholder="請簡易輸入如 3B-22"></div>
+            <div class="full"><label for="recordDetails">處理細節與補充說明</label><textarea id="recordDetails" rows="4" placeholder="請記錄發現問題、處置內容、處置後結果及必要補充"></textarea></div>
+            <div class="actions full"><button class="secondary" type="button" id="saveDutyDraftBtn">暫存</button><button class="primary" type="submit">確認儲存</button><button class="secondary" type="button" id="clearDutyRecordForm">新增／清空本筆</button></div>
+          </form>
+          <div class="workspace-head" style="margin-top:18px"><h3>未完成／待補紀錄</h3></div>
+          <div id="dutyDraftList"></div>
+          <div class="workspace-head" style="margin-top:22px"><h3>已確認儲存紀錄</h3><button class="secondary" id="exportDutyRecords" type="button">匯出紀錄 CSV</button></div>
+          <div id="dutySavedRecords"></div>
+        </section>
+      </div>
+      <div class="workspace-head" style="margin-top:20px">
+        <div><h3>Duty Log｜值班規則管理</h3>
+        <p class="hint">依 2026 年值班區域整理表建立可編輯規則。責任區域與 Cover troubleshooting 區域分開管理。</p></div>
+        <span class="pill">第一階段｜規則主檔</span>
+      </div>
+      <div class="notice" style="border-color:#d5a63b;background:#3b321b;color:#fff0bc">
+        規則目前儲存在此瀏覽器。正式多人使用前，需再接入共用資料庫／登入身分。請核對規則後再用於實際值班。
+      </div>
+      <div class="filters">
+        <div><label for="dutyDateType">日期類型</label><select id="dutyDateType"><option value="">全部日期類型</option><option>平日</option><option>週六</option><option>週日</option><option>週日（國定假日）</option><option>假日</option></select></div>
+        <div><label for="dutyShift">班別</label><select id="dutyShift"><option value="">全部班別</option><option>白班</option><option>小夜</option><option>大夜</option></select></div>
+        <div><label for="dutyGroup">組別</label><select id="dutyGroup"><option value="">全部組別</option><option>總</option><option>外</option><option>兒</option><option>總（三人）</option><option>外（三人）</option><option>兒（三人）</option><option>總（兩人）</option><option>兒（兩人）</option></select></div>
+      </div>
+      <div class="actions"><button class="primary" id="addDutyRule" type="button">＋ 新增值班規則</button><button class="secondary" id="exportDutyRules" type="button">匯出規則 CSV</button><button class="secondary" id="resetDutyRules" type="button">還原初始示範規則</button></div>
+      
+      <div id="dutyRuleList" class="patient-list"></div>
+      <section class="detail hidden" id="dutyRuleEditor" style="margin-top:14px">
+        <div class="workspace-head"><div><h4 id="dutyRuleEditorTitle">編輯值班規則</h4><p class="hint">可調整日期類型、班別、組別、責任區域、Cover 區域及提醒。</p></div><button class="secondary" id="cancelDutyRule" type="button">關閉</button></div>
+        <div class="filters">
+          <div><label for="ruleDateType">日期類型</label><select id="ruleDateType"><option>平日</option><option>週六</option><option>週日</option><option>週日（國定假日）</option><option>假日</option></select></div>
+          <div><label for="ruleShift">班別</label><select id="ruleShift"><option>白班</option><option>小夜</option><option>大夜</option></select></div>
+          <div><label for="ruleGroup">組別</label><select id="ruleGroup"><option>總</option><option>外</option><option>兒</option><option>總（三人）</option><option>外（三人）</option><option>兒（三人）</option><option>總（兩人）</option><option>兒（兩人）</option></select></div>
+          <div><label for="ruleEffective">生效日期</label><input id="ruleEffective" type="date" value="2026-09-15"></div>
+          <div><label for="ruleResponsibility">責任區域（每行一項）</label><textarea id="ruleResponsibility" rows="4" placeholder="例如：ER、1A1、3A1"></textarea></div>
+          <div><label for="ruleCover">Cover troubleshooting 區域（每行一項）</label><textarea id="ruleCover" rows="4" placeholder="與責任區域分開填寫"></textarea></div>
+          <div><label for="ruleReminders">當班提醒（每行一項）</label><textarea id="ruleReminders" rows="4" placeholder="例如：check setting、拆備管、N'P"></textarea></div>
+          <div><label for="ruleNotes">其他備註</label><textarea id="ruleNotes" rows="3"></textarea></div>
+          <div><label><input type="checkbox" id="ruleActive" checked> 啟用此規則</label></div>
+        </div>
+        <div class="actions"><button class="primary" id="saveDutyRule" type="button">儲存規則</button></div>
+      </section>
     </section>
 
     <section id="placeholderSection" class="hidden">
@@ -541,14 +697,16 @@ const topics={
 };
 function openTopic(key){
  document.querySelectorAll(".topic").forEach(b=>b.classList.toggle("active",b.dataset.topic===key));
- if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("maintenanceSection").classList.add("hidden");$("ventilatorSearchSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
+ if(key==="patients"){$("patientSection").classList.remove("hidden");$("ventilatorSection").classList.add("hidden");$("maintenanceSection").classList.add("hidden");$("ventilatorSearchSection").classList.add("hidden");$("placeholderSection").classList.add("hidden");$("dutySection").classList.add("hidden");$("sectionTitle").textContent="照護單位 / Unit Filter";$("sectionHint").textContent="可先選單位篩選，也可直接輸入姓名、病歷號或床號進行全院搜尋。";return;}
  $("patientSection").classList.add("hidden");
  $("ventilatorSection").classList.toggle("hidden",key!=="ventilator");
  $("maintenanceSection").classList.toggle("hidden",key!=="maintenance");$("ventilatorSearchSection").classList.add("hidden");
- $("placeholderSection").classList.toggle("hidden",key==="ventilator"||key==="maintenance");
+ $("dutySection").classList.toggle("hidden",key!=="duty");
+ $("placeholderSection").classList.toggle("hidden",key==="ventilator"||key==="maintenance"||key==="duty");
  $("sectionTitle").textContent=topics[key].title;$("sectionHint").textContent="六大主題架構已保留。";
- if(key!=="ventilator"&&key!=="maintenance")$("placeholderText").textContent=topics[key].text;
+ if(key!=="ventilator"&&key!=="maintenance"&&key!=="duty")$("placeholderText").textContent=topics[key].text;
  if(key==="maintenance")renderMaintenance();
+ if(key==="duty")renderDutyRules();
  if(key==="ventilator"&&selectedPatientId){const p=patients.find(x=>x.id===selectedPatientId);if(p)renderDetail(p);}
 }
 document.querySelectorAll(".topic").forEach(b=>b.addEventListener("click",()=>openTopic(b.dataset.topic)));
@@ -655,6 +813,299 @@ function renderHospitalSearchResult(){const id=$("searchVentilatorCode").value,e
 function confirmHospitalMovement(){const id=$("searchVentilatorCode").value,e=equipment.find(x=>x.id===id),action=$("searchVentilatorAction").value;if(!e||!action)return;let newCategory=e.category,newUnit=e.unit,newCode=e.unitCode,newLoc=action,newState=e.state;if(action==='送修'){newLoc='送修';newState='維修中';}else if(action==='B1 RT'||action==='16F RT'){newCategory=action;newUnit=action;newCode=action==='B1 RT'?'B1-RT':'16F-RT';newLoc=action+' room';newState='備機';}else if(action==='醫療單位'){const u=flatUnits.find(x=>x.unitCode===$("searchDestinationUnit").value);if(!u)return;newCategory=u.category;newUnit=u.unit;newCode=u.unitCode;newLoc=$("searchDestinationBed").value;newState='使用中';}
  if(e.unitCode===newCode&&e.location===newLoc&&e.state===newState){alert('設備目前已是這個位置與狀態。');return;}const from={category:e.category,unit:e.unit,unitCode:e.unitCode,location:e.location,state:e.state};e.category=newCategory;e.unit=newUnit;e.unitCode=newCode;e.location=newLoc;e.state=newState;movementRecords.push({movementId:'MV-'+Date.now(),equipmentId:id,model:e.model,fromUnit:from.unit,fromUnitCode:from.unitCode,fromLocation:from.location,toUnit:e.unit,toUnitCode:e.unitCode,toLocation:newLoc,staff:'全院搜尋動態更新',date:new Date().toISOString(),createdAt:new Date().toISOString(),action,fromState:from.state,toState:newState});if(saveJson(equipmentKey,equipment)&&saveJson(movementKey,movementRecords)){alert('已更新設備動態並保留歷史紀錄。');renderHospitalSearchResult();}}
 $("saveEquipmentLocation").addEventListener("click",saveEquipmentLocationNow);$("openHospitalSearch").addEventListener("click",openHospitalSearch);$("backToMaintenanceFromSearch").addEventListener("click",()=>{ $("ventilatorSearchSection").classList.add("hidden");$("maintenanceSection").classList.remove("hidden");renderMaintenance();});$("searchVentilatorModel").addEventListener("change",updateSearchCodes);$("searchVentilatorCode").addEventListener("change",()=>{updateSearchAction();});$("searchVentilatorAction").addEventListener("change",updateSearchAction);$("searchDestinationCategory").addEventListener("change",updateSearchDestinationUnits);$("searchDestinationUnit").addEventListener("change",updateSearchDestinationBeds);$("searchDestinationBed").addEventListener("change",renderHospitalSearchResult);$("confirmVentilatorMovement").addEventListener("click",confirmHospitalMovement);
+
+
+// --- Duty Log stage 1: editable shift rules and alerts (browser-local prototype) ---
+
+// Duty Log entry gate: choose date type, shift and group before opening the record area.
+
+function populateSelect(select, values, placeholder){
+ select.innerHTML='<option value="">'+esc(placeholder)+'</option>'+values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+ select.disabled=values.length===0;
+}
+const dutyEntryOptions = {
+ '平日': {'小夜':['總','外','兒'], '大夜':['總','兒']},
+ '週六': {'白班':['總','外','兒'], '小夜':['總','外','兒'], '大夜':['總','兒']},
+ '週日（國定／颱風）': {'白班':['總','外','兒'], '小夜':['總','兒'], '大夜':['總','兒']}
+};
+function initDutyEntryCascades(){
+ const dateSel=$('entryDateType'),shiftSel=$('entryShift'),groupSel=$('entryGroup');
+ populateSelect(dateSel,Object.keys(dutyEntryOptions),'請選擇日期類型');
+ populateSelect(shiftSel,[],'請先選日期類型');
+ populateSelect(groupSel,[],'請先選班別');
+ dateSel.addEventListener('change',()=>{
+   const shifts=Object.keys(dutyEntryOptions[dateSel.value]||{});
+   populateSelect(shiftSel,shifts,'請選擇班別');
+   populateSelect(groupSel,[],'請先選班別');
+   $('entryRulePreview').classList.add('hidden');$('enterDutyRecordActions').classList.add('hidden');$('dutyRecordPlaceholder').classList.add('hidden');
+ });
+ shiftSel.addEventListener('change',()=>{
+   const groups=(dutyEntryOptions[dateSel.value]||{})[shiftSel.value]||[];
+   populateSelect(groupSel,groups,'請選擇組別');
+   $('entryRulePreview').classList.add('hidden');$('enterDutyRecordActions').classList.add('hidden');$('dutyRecordPlaceholder').classList.add('hidden');
+ });
+ groupSel.addEventListener('change',()=>{
+   $('entryRulePreview').classList.add('hidden');$('enterDutyRecordActions').classList.add('hidden');$('dutyRecordPlaceholder').classList.add('hidden');
+ });
+ try{
+   const saved=JSON.parse(localStorage.getItem(dutySessionKey)||'null');
+   if(saved && dateTypes.includes(saved.dateType)){
+     dateSel.value=saved.dateType;
+     populateSelect(shiftSel,Object.keys(dutyEntryOptions[saved.dateType]||{}),'請選擇班別');
+     if((dutyEntryOptions[saved.dateType]||{})[saved.shift]){
+       shiftSel.value=saved.shift;
+       populateSelect(groupSel,(dutyEntryOptions[saved.dateType]||{})[saved.shift],'請選擇組別');
+       if((dutyEntryOptions[saved.dateType]||{})[saved.shift].includes(saved.group))groupSel.value=saved.group;
+       if(groupSel.value)confirmDutyEntry();
+     }
+   }
+ }catch(e){}
+}
+function confirmDutyEntry(){
+ const dt=$('entryDateType').value, sh=$('entryShift').value, gr=$('entryGroup').value;
+ try{localStorage.setItem(dutySessionKey,JSON.stringify({dateType:dt,shift:sh,group:gr,savedAt:new Date().toISOString()}));}catch(e){}
+ const dateAliases = dt==='週日（國定／颱風）'
+   ? (sh==='白班' ? ['週日'] : sh==='小夜' ? ['週日（國定假日）','週日'] : ['假日','週日（國定假日）','週日'])
+   : [dt];
+ const groupAliases = gr==='總' ? ['總','總（三人）','總（兩人）']
+   : gr==='外' ? ['外','外（三人）']
+   : ['兒','兒（三人）','兒（兩人）'];
+ const matched=dutyRules.filter(r=>r.active && dateAliases.includes(r.dateType) && r.shift===sh && groupAliases.includes(r.group));
+ const exact=matched.length>0;
+ const preview=$('entryRulePreview');
+ preview.classList.remove('hidden');
+ if(!exact){
+   preview.innerHTML='<strong>尚無完全符合的啟用規則</strong><p>目前沒有找到「'+esc(dt)+'｜'+esc(sh)+'｜'+esc(gr)+'」的啟用規則。請重新選擇，或先至「值班規則管理」新增／啟用對應規則。</p>';
+   $('enterDutyRecordActions').classList.add('hidden');
+   return;
+ }
+ const r=matched[0];
+ preview.innerHTML='<div class="selected-duty-banner"><div><span>日期類型</span><strong>'+esc(dt)+'</strong></div><div><span>班別</span><strong>'+esc(sh)+'</strong></div><div><span>組別</span><strong>'+esc(gr)+'</strong></div></div>'+
+ '<p><b>生效日期：</b>'+esc(r.effective||'未設定')+'</p>'+
+ '<p><b>責任區域：</b>'+esc(r.responsibility||'未設定')+'</p>'+
+ '<p><b>Cover troubleshooting 區域：</b>'+esc(r.cover||'未設定')+'</p>'+
+ '<p><b>當班提醒：</b>'+esc(r.reminders||'無')+'</p>'+
+ '<p><b>其他備註：</b>'+esc(r.notes||'無')+'</p>';
+ $('enterDutyRecordActions').classList.remove('hidden');
+ $('dutyRecordPlaceholder').classList.add('hidden');
+}
+if($('confirmDutyEntry')) $('confirmDutyEntry').addEventListener('click',confirmDutyEntry);
+if($('changeDutyEntry')) $('changeDutyEntry').addEventListener('click',()=>{
+ $('entryRulePreview').classList.add('hidden');$('enterDutyRecordActions').classList.add('hidden');$('dutyRecordPlaceholder').classList.add('hidden');
+});
+if($('enterDutyRecord')) $('enterDutyRecord').addEventListener('click',()=>{
+ $('dutyRecordPlaceholder').classList.remove('hidden');
+ $('dutyRecordShiftBanner').innerHTML='<div><span>日期類型</span><strong>'+esc($('entryDateType').value)+'</strong></div><div><span>班別</span><strong>'+esc($('entryShift').value)+'</strong></div><div><span>組別</span><strong>'+esc($('entryGroup').value)+'組</strong></div>';
+ initDutyRecordForm();
+ $('dutyRecordPlaceholder').scrollIntoView({behavior:'smooth',block:'start'});
+});
+if($('backToDutyRules')) $('backToDutyRules').addEventListener('click',()=>{
+ $('dutyRecordPlaceholder').classList.add('hidden');
+ $('entryRulePreview').scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+const dutyRulesKey='rtClinicalDutyRulesV1';
+const dutyInitialRules=[
+ {id:'D-WD-SM-G',dateType:'平日',shift:'小夜',group:'總',effective:'2026-09-15',responsibility:'ER、1A1、3A1、3A2、3B1(6E1)、3B2、3C1、3C2、4C1、東址病房、HD',cover:'病房組W1、W2、W3、W4（臨時）協助故障排除／troubleshooting、接聽N’P',reminders:'check setting：3A1-06、7-1、7-2、8-1、8-2；不須 cover 病房時，請協助內科 ICU 拆備管',notes:'新病人收案至21:30',active:true},
+ {id:'D-WD-SM-S',dateType:'平日',shift:'小夜',group:'外',effective:'2026-09-15',responsibility:'5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、POR（4F＆5F）',cover:'',reminders:'接平日早班16:00後區域；協助外科各 ICU 拆備管',notes:'新病人收案至21:30',active:true},
+ {id:'D-WD-SM-P',dateType:'平日',shift:'小夜',group:'兒',effective:'2026-09-15',responsibility:'西病、6PE、8PE、OPII、OPNI、OPNO、兒病、健大整棟（7HS ICU＋病房）',cover:'',reminders:'協助兒醫整棟 ICU、西病區域拆備機；健大樓自2026/9/14啟用，7HS 外科 ICU 4床',notes:'新病人收案至21:30',active:true},
+ {id:'D-WD-N-G',dateType:'平日',shift:'大夜',group:'總',effective:'2026-09-15',responsibility:'5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、3A1、東址病房、HD、POR（4F＆5F）',cover:'',reminders:'check setting 病房 night use：W1/3/5東址AB棟、W2/4東址CD棟',notes:'新病人收案21:30–06:00；呼吸器管路準備依奇偶月規則執行',active:true},
+ {id:'D-WD-N-P',dateType:'平日',shift:'大夜',group:'兒',effective:'2026-09-15',responsibility:'ER、1A1、3A2、3B2(6E1)、3B2、3C1、3C2、4C1、西病、兒醫整棟（ICU＋病房）、健大整棟（7HS ICU＋病房）',cover:'',reminders:'check setting 病房 night use：兒病＋西病',notes:'新病人收案21:30–06:00；呼吸器管路準備依奇偶月規則執行',active:true},
+ {id:'D-SAT-DAY-G',dateType:'週六',shift:'白班',group:'總',effective:'2026-09-15',responsibility:'check setting＋拆備管＋N’P：ER、東址病房',cover:'3A2、3C1、3C2、1A1、HD',reminders:'14:30 手機交給小夜班',notes:'週末白班新病人收案至14:30',active:true},
+ {id:'D-SAT-DAY-S',dateType:'週六',shift:'白班',group:'外',effective:'2026-09-15',responsibility:'check setting＋拆備管＋N’P：5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、3A1',cover:'4C1、3B1(6E1)、3B2、POR（4F＆5F）',reminders:'',notes:'週末白班新病人收案至14:30',active:true},
+ {id:'D-SAT-DAY-P',dateType:'週六',shift:'白班',group:'兒',effective:'2026-09-15',responsibility:'check setting＋拆備管＋N’P：OPNI、OPII、OPNO、8PE、6PE、兒病、健大整棟（7HS ICU＋病房）',cover:'西病',reminders:'',notes:'週末白班新病人收案至14:30',active:true},
+ {id:'D-SAT-SM-G',dateType:'週六',shift:'小夜',group:'總（三人）',effective:'2026-09-15',responsibility:'ER、1A1、4C1、3B1(6E1)、3B2、3C1、3C2、3A1、3A2、東址病房、HD',cover:'14:30–16:00 cover 9–15樓病房、ER＋1A1 troubleshooting',reminders:'14:30 接手機；check setting＋拆備管＋N’P：3C1、3C2、1A1',notes:'新病人收案至21:30',active:true},
+ {id:'D-SAT-SM-S',dateType:'週六',shift:'小夜',group:'外（三人）',effective:'2026-09-15',responsibility:'5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、POR（4F＆5F）',cover:'14:30–16:00 cover 5–8樓病房 troubleshooting',reminders:'check setting＋拆備管＋N’P：3A2、3B2、4C1',notes:'新病人收案至21:30',active:true},
+ {id:'D-SAT-SM-P',dateType:'週六',shift:'小夜',group:'兒（三人）',effective:'2026-09-15',responsibility:'6PE、8PE、OPNI、OPII、OPNO、兒病、西病、健大整棟（7HS ICU＋病房）',cover:'',reminders:'check setting＋拆備管＋N’P：3B1(6E1)＋西病',notes:'新病人收案至21:30',active:true},
+ {id:'D-SAT-N-G',dateType:'週六',shift:'大夜',group:'總',effective:'2026-09-15',responsibility:'5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、3A1、東址病房、HD、POR（4F＆5F）',cover:'',reminders:'呼吸器管路準備依奇偶月規則執行；週日大夜另備週一管路',notes:'新病人收案21:30–06:00',active:true},
+ {id:'D-SAT-N-P',dateType:'週六',shift:'大夜',group:'兒',effective:'2026-09-15',responsibility:'ER、1A1、3A2、3B1(6E1)、3B2、3C1、3C2、4C1、西病、兒醫整棟（ICU＋病房）、健大整棟（7HS ICU＋病房）',cover:'',reminders:'呼吸器管路準備依奇偶月規則執行；週日大夜另備週一管路',notes:'新病人收案21:30–06:00',active:true},
+ {id:'D-SUN-DAY-G',dateType:'週日',shift:'白班',group:'總',effective:'2026-09-15',responsibility:'check setting＋拆備管＋N’P：ER、1A1、東址病房',cover:'3A2、3C1、3C2、HD',reminders:'14:30 手機交給小夜班',notes:'週末白班新病人收案至14:30',active:true},
+ {id:'D-SUN-DAY-S',dateType:'週日',shift:'白班',group:'外',effective:'2026-09-15',responsibility:'check setting＋拆備管＋N’P：5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、3A1',cover:'4C1、3B1(6E1)、3B2、POR（4F＆5F）',reminders:'',notes:'週末白班新病人收案至14:30',active:true},
+ {id:'D-SUN-DAY-P',dateType:'週日',shift:'白班',group:'兒',effective:'2026-09-15',responsibility:'check setting＋拆備管＋N’P：OPNI、OPII、OPNO、8PE、6PE、兒病、健大整棟（7HS ICU＋病房）',cover:'西病',reminders:'',notes:'週末白班新病人收案至14:30',active:true},
+ {id:'D-SUN-SM-G',dateType:'週日（國定假日）',shift:'小夜',group:'總（兩人）',effective:'2026-09-15',responsibility:'5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、3A1、東址病房、HD＋POR',cover:'14:30–16:00 cover 9–15樓病房、ER＋1A1 troubleshooting',reminders:'14:30 接總值手機；check setting＋拆備管＋N’P：3C1、3C2、3A2、4C1',notes:'新病人收案至21:30；國定假日套用假日規則',active:true},
+ {id:'D-SUN-SM-P',dateType:'週日（國定假日）',shift:'小夜',group:'兒（兩人）',effective:'2026-09-15',responsibility:'1A1＋ER、3A2、3B1(6E1)、3B2、3C1、3C2、4C1、西病、6PE、8PE、OPNI、OPII、OPNO、兒病、健大整棟（7HS ICU＋病房）',cover:'14:30–16:00 cover 5–8樓病房 troubleshooting',reminders:'check setting＋拆備管＋N’P：3B1(6E1)、3B2、西病',notes:'新病人收案至21:30；國定假日套用假日規則',active:true},
+ {id:'D-HOL-N-G',dateType:'假日',shift:'大夜',group:'總',effective:'2026-09-15',responsibility:'5CVIS、5CVIM、4A1、4A2、4B1、4B2、4C2、4D1、3A1、東址病房、HD、POR（4F＆5F）',cover:'',reminders:'呼吸器管路準備依奇偶月規則執行；週日大夜另備週一管路',notes:'新病人收案21:30–06:00',active:true},
+ {id:'D-HOL-N-P',dateType:'假日',shift:'大夜',group:'兒',effective:'2026-09-15',responsibility:'ER、1A1、3A2、3B1(6E1)、3B2、3C1、3C2、4C1、西病、兒醫整棟（ICU＋病房）、健大整棟（7HS ICU＋病房）',cover:'',reminders:'呼吸器管路準備依奇偶月規則執行；週日大夜另備週一管路',notes:'新病人收案21:30–06:00',active:true}
+];
+let dutyRules=(()=>{try{const x=JSON.parse(localStorage.getItem(dutyRulesKey)||'null');if(!Array.isArray(x))return dutyInitialRules.map(r=>({...r}));const savedById=new Map(x.map(r=>[r.id,r]));const merged=dutyInitialRules.map(r=>({...r,...(savedById.get(r.id)||{})}));const extra=x.filter(r=>!dutyInitialRules.some(d=>d.id===r.id));return [...merged,...extra].map(r=>({...r,effective:r.effective==='2026-01-01'?'2026-09-15':(r.effective||'2026-09-15')}));}catch(e){return dutyInitialRules.map(r=>({...r}));}})();
+let dutyEditingId=null;
+try{localStorage.setItem(dutyRulesKey,JSON.stringify(dutyRules));}catch(e){}
+function saveDutyRules(){try{localStorage.setItem(dutyRulesKey,JSON.stringify(dutyRules));return true;}catch(e){alert('規則儲存失敗，請檢查瀏覽器儲存空間。');return false;}}
+function renderDutyRules(){
+ const dt=$('dutyDateType').value,sh=$('dutyShift').value,gr=$('dutyGroup').value;
+ const rows=dutyRules.filter(r=>(!dt||r.dateType===dt)&&(!sh||r.shift===sh)&&(!gr||r.group===gr));
+ $('dutyRuleList').innerHTML=rows.length?rows.map(r=>`<div class="patient-btn ${r.active?'':'duty-rule-inactive'}"><strong>${esc(r.dateType)}｜${esc(r.shift)}｜${esc(r.group)} ${r.active?'':'（已停用）'}</strong><small>生效日期：${esc(r.effective||'未設定')}</small><small><b>責任區域：</b>${esc(r.responsibility||'未設定')}</small><small><b>Cover troubleshooting：</b>${esc(r.cover||'未設定')}</small><small><b>當班提醒：</b>${esc(r.reminders||'無')}</small><small><b>其他備註：</b>${esc(r.notes||'無')}</small><div class="duty-rule-actions"><button type="button" class="secondary" data-duty-edit="${esc(r.id)}">編輯</button><button type="button" class="secondary" data-duty-toggle="${esc(r.id)}">${r.active?'停用':'啟用'}</button></div></div>`).join(''):'<div class="empty">沒有符合篩選條件的規則。</div>';
+ $('dutyRuleList').querySelectorAll('[data-duty-edit]').forEach(b=>b.addEventListener('click',()=>editDutyRule(b.dataset.dutyEdit)));
+ $('dutyRuleList').querySelectorAll('[data-duty-toggle]').forEach(b=>b.addEventListener('click',()=>{const r=dutyRules.find(x=>x.id===b.dataset.dutyToggle);if(r){r.active=!r.active;saveDutyRules();renderDutyRules();}}));
+ const today=new Date(),dow=today.getDay(),isHolidayType=(dt==='週日（國定假日）'||dt==='假日');
+ const alertLines=['規則提示：責任區域與 Cover troubleshooting 區域不同，請勿互相取代。','週末白班：14:30 手機交接小夜班。','新病人收案：白班至14:30；小夜至21:30；大夜21:30–06:00。','呼吸器管路準備：大夜班負責；奇數月總組、偶數月兒組；週日大夜另備週一管路。','2026/9/14 起健大樓及7HS外科ICU納入相關值班規則；2026/10/1起6E1調整至3B1。'];
+ $('dutyAlertPanel').classList.remove('hidden');$('dutyAlertPanel').innerHTML='<strong>值班規則提醒</strong><ul>'+alertLines.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+}
+function editDutyRule(id){
+ const r=id?dutyRules.find(x=>x.id===id):null;dutyEditingId=id||null;
+ $('dutyRuleEditorTitle').textContent=r?'編輯值班規則':'新增值班規則';
+ $('ruleDateType').value=r?.dateType||'平日';$('ruleShift').value=r?.shift||'小夜';$('ruleGroup').value=r?.group||'總';$('ruleEffective').value=r?.effective||'2026-09-15';
+ $('ruleResponsibility').value=(r?.responsibility||'').replace(/、/g,'、');$('ruleCover').value=r?.cover||'';$('ruleReminders').value=r?.reminders||'';$('ruleNotes').value=r?.notes||'';$('ruleActive').checked=r?.active??true;
+ $('dutyRuleEditor').classList.remove('hidden');$('dutyRuleEditor').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('addDutyRule').addEventListener('click',()=>editDutyRule(null));
+$('cancelDutyRule').addEventListener('click',()=>$('dutyRuleEditor').classList.add('hidden'));
+$('saveDutyRule').addEventListener('click',()=>{
+ const obj={id:dutyEditingId||('D-'+Date.now()),dateType:$('ruleDateType').value,shift:$('ruleShift').value,group:$('ruleGroup').value,effective:$('ruleEffective').value,responsibility:$('ruleResponsibility').value.trim(),cover:$('ruleCover').value.trim(),reminders:$('ruleReminders').value.trim(),notes:$('ruleNotes').value.trim(),active:$('ruleActive').checked};
+ if(!obj.responsibility){alert('請填寫責任區域；若此規則確實無責任區域，請填「無」。');return;}
+ const idx=dutyRules.findIndex(r=>r.id===obj.id);if(idx>=0)dutyRules[idx]={...obj,updatedAt:new Date().toISOString()};else dutyRules.push({...obj,createdAt:new Date().toISOString()});
+ if(saveDutyRules()){$('dutyRuleEditor').classList.add('hidden');renderDutyRules();}
+});
+['dutyDateType','dutyShift','dutyGroup'].forEach(id=>$(id).addEventListener('change',renderDutyRules));
+$('resetDutyRules').addEventListener('click',()=>{if(confirm('確定還原初始示範規則？這會覆蓋目前瀏覽器中的值班規則。')){dutyRules=dutyInitialRules.map(r=>({...r}));saveDutyRules();renderDutyRules();}});
+$('exportDutyRules').addEventListener('click',()=>{
+ const headers=['日期類型','班別','組別','生效日期','責任區域','Cover troubleshooting區域','當班提醒','其他備註','啟用'];
+ const lines=[headers,...dutyRules.map(r=>[r.dateType,r.shift,r.group,r.effective,r.responsibility,r.cover,r.reminders,r.notes,r.active?'是':'否'])];
+ const csv='\uFEFF'+lines.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='RT_Duty_Rules.csv';a.click();URL.revokeObjectURL(url);
+});
+
+
+if(document.getElementById('entryDateType')) initDutyEntryCascades();
+
+
+// Stage 2: REDCap-style Duty Log form prototype (local browser storage only).
+const dutyProblemOptions=[
+'呼吸器障礙排除','非侵襲性呼吸器障礙排除','氧氣治療相關障礙排除','因病況調整呼吸器相關參數','潮濕器障礙排除','新病人','借機／換機／還機','拆備機','送檢查','check iNO','check prone position','Weaning parameter','Cuff leakage test','WP+Cuff Leak','check cuff pressure','居家呼吸器設定確認','OSA病人呼吸器參數確認','夜間呼吸器使用狀況','病人出院相關事宜','討論病情呼吸器相關問題','假日例行病人巡視','其他'];
+const dutyDetailOptions={
+'呼吸器障礙排除':['High breath rates','Low breath rates','High Ve','Low Ve','High Vt','Low Vt','High pressure','Low pressure','Disconnect','Apnea','INOP','High O2','Low O2','Tube leak／tube disconnection','Patient-ventilator asynchrony','Low Battery','O2 cells expired','Machine noise','AC POWER LOSS','Circuit occlusion','Device alert','Invalid gas ID','Low O2 inlet','Machine won’t start','DC status','其他／以上皆非'],
+'非侵襲性呼吸器障礙排除':['Mask size unsuitable','病人表示 BiPAP 氣流太強','病人表示吸不到氣','Low Vt','Low Ve','Low breath rates','Disconnect','INOP','Patient-BiPAP mismatch','Circuit leak／disconnection','Low Battery','Machine noise','AC POWER LOSS','Low circuit leakage','Machine won’t start','DC status','其他／以上皆非'],
+'氧氣治療相關障礙排除':['HFNC assembly','HFNC settings','HFNC alarm','其他／以上皆非'],
+'因病況調整呼吸器相關參數':['CO₂ 上升','CO₂ 下降','Desaturation','Over oxygenation','呼吸困難','ETT（確認呼吸器設定）','要求確認設定','病人呼吸困難','詢問呼吸器使用','詢問病人病況','Check cuff pressure','Cuff leakage sounds','NO values unstable','NO environmental monitor alarm','其他／以上皆非'],
+'其他':['其他／以上皆非']
+};
+function populateRecordProblem(){
+ const sel=$('recordProblem'); if(!sel)return;
+ sel.innerHTML='<option value="">請選擇處理問題</option>'+dutyProblemOptions.map(x=>'<option>'+esc(x)+'</option>').join('');
+}
+function updateRecordProblemDetails(){
+ const p=$('recordProblem').value,sel=$('recordDetailProblem');
+ const opts=dutyDetailOptions[p]||['一般例行作業','設定確認','拆備機','送檢查','病人評估','其他／以上皆非'];
+ sel.innerHTML='<option value="">請選擇細項</option>'+opts.map(x=>'<option>'+esc(x)+'</option>').join('');
+ $('recordOtherProblemWrap').classList.toggle('hidden',!(p==='其他'||sel.value==='其他／以上皆非'));
+}
+function updateDutyRecordTypeFields(){
+ const type=document.querySelector('input[name="recordType"]:checked')?.value||'';
+ $('recordInformWrap').classList.toggle('hidden',!['來電處置','臨時處置'].includes(type));
+ $('recordTransferWrap').classList.toggle('hidden',type!=='轉接');
+}
+function loadDutyRecords(){try{return JSON.parse(localStorage.getItem('rtDutyRecordsV1')||'[]')}catch(e){return []}}
+function renderDutyRecords(){
+ const el=$('dutySavedRecords');if(!el)return;const rows=loadDutyRecords();
+ if(!rows.length){el.innerHTML='<p class="hint">尚無已確認儲存紀錄。</p>';return;}
+ el.innerHTML='<div class="saved-record-list">'+rows.slice().reverse().map(r=>'<div class="draft-card"><strong>建立時間：'+esc(r.createdAt?new Date(r.createdAt).toLocaleString('zh-TW'):'—')+'</strong><p>接聽／事件時間：'+esc(r.time||'')+'</p><p>'+esc(r.dateType+'｜'+r.shift+'｜'+r.group)+'　'+esc(r.type||'')+'</p><p>'+esc(r.problem+'／'+(r.detail||r.otherProblem||''))+'｜'+esc(r.unitBed||'')+'</p><p>處理人員：'+esc(r.staff||'')+'</p><button type="button" class="secondary" data-edit-record="'+esc(r.id)+'">修改紀錄</button></div>').join('')+'</div>';
+ el.querySelectorAll('[data-edit-record]').forEach(btn=>btn.addEventListener('click',()=>{
+  const r=loadDutyRecords().find(x=>x.id===btn.dataset.editRecord);if(!r)return;
+  resetDutyEntryForm(false);editingDutyRecordId=r.id;
+  applyDutyFormFields({recordStaff:r.staff,recordEmployeeId:r.employeeId,recordCallTime:r.time,recordType:r.type,recordProblem:r.problem,recordDetailProblem:r.detail,recordOtherProblem:r.otherProblem,recordInform:r.inform,recordInformOther:r.informOther,recordTransfer:r.transfer,recordArrival:r.arrival,recordPatientId:r.patientId,recordUnitBed:r.unitBed,recordDetails:r.details});
+  const submit=$('dutyRecordForm').querySelector('button[type="submit"]');if(submit)submit.textContent='確認更新';
+  $('dutyRecordForm').scrollIntoView({behavior:'smooth',block:'start'});
+ }));
+}
+const dutyDraftKey='rtDutyLogDraftsV2';
+const dutySessionKey='rtDutyLogActiveShiftV1';
+let currentDutyDraftId=null;
+let editingDutyRecordId=null;
+function getDutyDrafts(){try{return JSON.parse(localStorage.getItem(dutyDraftKey)||'[]')}catch(e){return []}}
+function getDutyFormFields(){
+ const form=$('dutyRecordForm'),fields={};
+ form.querySelectorAll('input,select,textarea').forEach(el=>{
+  if(el.type==='radio'){if(el.checked)fields[el.name]=el.value;}
+  else if(el.id)fields[el.id]=el.value;
+ });
+ return fields;
+}
+function applyDutyFormFields(fields){
+ const form=$('dutyRecordForm');if(!form)return;
+ Object.entries(fields||{}).forEach(([key,value])=>{
+  if(key==='recordType'){const el=form.querySelector('input[name="recordType"][value="'+CSS.escape(value)+'"]');if(el)el.checked=true;return;}
+  const el=$(key);if(el)el.value=value;
+ });
+ updateRecordProblemDetails();updateDutyRecordTypeFields();
+ $('recordOtherProblemWrap').classList.toggle('hidden',!['其他','其他／以上皆非'].includes($('recordProblem').value)&&$('recordDetailProblem').value!=='其他／以上皆非');
+ $('recordInformOtherWrap').classList.toggle('hidden',$('recordInform').value!=='其他');
+}
+function saveDutyFormDraft(){
+ const fields=getDutyFormFields(),drafts=getDutyDrafts(),now=new Date().toISOString();
+ let draft=drafts.find(d=>d.id===currentDutyDraftId);
+ if(!draft){draft={id:'DRAFT-'+Date.now(),createdAt:now};drafts.push(draft);currentDutyDraftId=draft.id;}
+ draft.fields=fields;draft.updatedAt=now;
+ try{localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyDrafts();}catch(e){}
+}
+function saveCurrentAsDraft(){
+ const fields=getDutyFormFields(),drafts=getDutyDrafts(),now=new Date().toISOString();
+ let draft=drafts.find(d=>d.id===currentDutyDraftId);
+ if(!draft){draft={id:'DRAFT-'+Date.now(),createdAt:now};drafts.push(draft);currentDutyDraftId=draft.id;}
+ draft.fields=fields;draft.updatedAt=now;
+ try{localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyDrafts();alert('本筆已暫存。可繼續新增下一通電話，稍後再從「未完成／待補紀錄」接續。');resetDutyEntryForm(false);}catch(e){alert('暫存失敗，請確認瀏覽器允許本機儲存。');}
+}
+function renderDutyDrafts(){
+ const el=$('dutyDraftList');if(!el)return;
+ const drafts=getDutyDrafts();
+ if(!drafts.length){el.innerHTML='<p class="hint">目前沒有待補紀錄。</p>';return;}
+ el.innerHTML=drafts.slice().reverse().map(d=>{
+  const f=d.fields||{},time=f.recordCallTime||'尚未填接聽時間',problem=f.recordProblem||'尚未選擇處理問題',type=f.recordType||'尚未選處置類型',bed=f.recordUnitBed||'未填單位床號';
+  return '<div class="draft-card"><strong>待補紀錄｜'+esc(time)+'</strong><p>'+esc(type)+'｜'+esc(problem)+'｜'+esc(bed)+'</p><p>最後更新：'+esc(d.updatedAt?new Date(d.updatedAt).toLocaleString('zh-TW'):'—')+'</p><button type="button" class="secondary" data-resume-draft="'+esc(d.id)+'">接續編輯</button> <button type="button" class="secondary" data-delete-draft="'+esc(d.id)+'">刪除</button></div>';
+ }).join('');
+ el.querySelectorAll('[data-resume-draft]').forEach(btn=>btn.addEventListener('click',()=>{
+  const d=getDutyDrafts().find(x=>x.id===btn.dataset.resumeDraft);if(!d)return;
+  resetDutyEntryForm(false);currentDutyDraftId=d.id;applyDutyFormFields(d.fields);window.scrollTo({top:$('dutyRecordForm').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});
+ }));
+ el.querySelectorAll('[data-delete-draft]').forEach(btn=>btn.addEventListener('click',()=>{
+  if(!confirm('確定刪除此筆待補紀錄？'))return;
+  const drafts=getDutyDrafts().filter(d=>d.id!==btn.dataset.deleteDraft);localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));if(currentDutyDraftId===btn.dataset.deleteDraft)currentDutyDraftId=null;renderDutyDrafts();
+ }));
+}
+function resetDutyEntryForm(clearDraft=true){
+ const form=$('dutyRecordForm');if(!form)return;
+ if(clearDraft&&currentDutyDraftId){const drafts=getDutyDrafts().filter(d=>d.id!==currentDutyDraftId);localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyDrafts();}
+ form.reset();currentDutyDraftId=null;editingDutyRecordId=null;updateRecordProblemDetails();updateDutyRecordTypeFields();
+ $('recordOtherProblemWrap').classList.add('hidden');$('recordInformOtherWrap').classList.add('hidden');
+ const submit=form.querySelector('button[type="submit"]');if(submit)submit.textContent='確認儲存';
+}
+function initDutyRecordForm(){
+ if(!$('dutyRecordForm'))return;
+ populateRecordProblem();updateRecordProblemDetails();renderDutyRecords();renderDutyDrafts();
+ $('dutyRecordForm').querySelectorAll('input,select,textarea').forEach(el=>{el.addEventListener('input',saveDutyFormDraft);el.addEventListener('change',saveDutyFormDraft)});
+ $('useCurrentCallTime').addEventListener('click',()=>{const d=new Date();const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);$('recordCallTime').value=local;$('recordCallTime').dispatchEvent(new Event('change',{bubbles:true}));});
+ $('saveDutyDraftBtn').addEventListener('click',saveCurrentAsDraft);
+ $('recordProblem').addEventListener('change',updateRecordProblemDetails);
+ $('recordDetailProblem').addEventListener('change',()=>{$('recordOtherProblemWrap').classList.toggle('hidden',!['其他','其他／以上皆非'].includes($('recordProblem').value)&&$('recordDetailProblem').value!=='其他／以上皆非')});
+ document.querySelectorAll('input[name="recordType"]').forEach(el=>el.addEventListener('change',updateDutyRecordTypeFields));
+ $('recordInform').addEventListener('change',()=>$('recordInformOtherWrap').classList.toggle('hidden',$('recordInform').value!=='其他'));
+ $('dutyRecordForm').addEventListener('submit',e=>{
+   e.preventDefault();
+   const type=document.querySelector('input[name="recordType"]:checked')?.value;
+   if(!type){alert('請選擇值班處置類型');return;}
+   const old=editingDutyRecordId?loadDutyRecords().find(r=>r.id===editingDutyRecordId):null;
+   const rec={...(old||{}),id:old?.id||'DL-'+Date.now(),dateType:$('entryDateType').value,shift:$('entryShift').value,group:$('entryGroup').value,staff:$('recordStaff').value.trim(),employeeId:$('recordEmployeeId').value.trim(),time:$('recordCallTime').value,type,problem:$('recordProblem').value,detail:$('recordDetailProblem').value,otherProblem:$('recordOtherProblem').value,inform:$('recordInform').value,informOther:$('recordInformOther').value,transfer:$('recordTransfer').value,arrival:$('recordArrival').value,patientId:$('recordPatientId').value.trim(),unitBed:$('recordUnitBed').value.trim(),details:$('recordDetails').value,createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+   if(!rec.staff||!rec.time||!rec.problem||!rec.arrival){alert('請完成處理人員、接聽／事件時間、處理問題及到場處理欄位。');return;}
+   if(['來電處置','臨時處置'].includes(type)&&!rec.inform){alert('請選擇告知人員');return;}
+   if(type==='轉接'&&!rec.transfer){alert('請選擇轉接對象');return;}
+   const rows=loadDutyRecords(),idx=rows.findIndex(r=>r.id===rec.id);
+   if(idx>=0)rows[idx]=rec;else rows.push(rec);
+   try{
+    localStorage.setItem('rtDutyRecordsV1',JSON.stringify(rows));
+    if(currentDutyDraftId){localStorage.setItem(dutyDraftKey,JSON.stringify(getDutyDrafts().filter(d=>d.id!==currentDutyDraftId)));}
+    currentDutyDraftId=null;editingDutyRecordId=null;
+    renderDutyRecords();renderDutyDrafts();alert(old?'已更新並確認儲存紀錄。':'已確認儲存紀錄。');
+    resetDutyEntryForm(false);
+   }catch(err){alert('儲存失敗：瀏覽器可能無法使用本機儲存。');}
+ });
+ $('clearDutyRecordForm').addEventListener('click',()=>{if(confirm('要結束目前這筆編輯並新增另一筆紀錄嗎？已自動暫存的草稿仍會保留。'))resetDutyEntryForm(false);});
+ $('exportDutyRecords').addEventListener('click',()=>{
+   const rows=loadDutyRecords();if(!rows.length){alert('目前沒有可匯出的紀錄');return;}
+   const keys=['time','dateType','shift','group','staff','employeeId','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','createdAt'];
+   const headers=['事件時間','日期類型','班別','組別','處理人員','員工編號','值班處置類型','處理問題','問題細項','其他問題','告知人員','其他告知人員','轉接給誰','到場處理','病歷號','單位床號','處理細節','建立時間'];
+   const csv='\\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
+   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_Records.csv';a.click();URL.revokeObjectURL(a.href);
+ });
+}
 
 </script>
 </body>
