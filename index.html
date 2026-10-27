@@ -203,6 +203,59 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
  #dutyRecordShiftBanner .selected-duty-banner span{font-size:9px}
 }
 
+
+/* Accumulating duty log: newest first, oldest naturally moves down */
+#dutySavedRecords .duty-log-row{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;border:1px solid #47758e;border-radius:9px;padding:10px;margin:7px 0;background:#102b3a}
+#dutySavedRecords .duty-status-light{width:28px;height:28px;min-width:28px;border-radius:50%;border:2px solid rgba(255,255,255,.7);padding:0;display:flex;align-items:center;justify-content:center;font-size:0;box-shadow:0 0 8px currentColor}
+#dutySavedRecords .duty-status-light.pending{background:#ffd34e;color:#ffd34e}
+#dutySavedRecords .duty-status-light.confirmed{background:#37d67a;color:#37d67a}
+#dutySavedRecords .duty-log-summary{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:13px}
+#dutySavedRecords .duty-log-summary strong{color:#fff}
+#dutySavedRecords .duty-log-summary .time{grid-column:1/-1;color:#c4d9e6;font-size:12px}
+@media(max-width:600px){
+ #dutySavedRecords .duty-log-row{padding:8px;gap:8px}
+ #dutySavedRecords .duty-log-summary{grid-template-columns:1fr;gap:2px}
+ #dutySavedRecords .duty-log-summary .time{grid-column:auto}
+}
+
+
+/* Compact duty entry header and focus mode */
+#dutyRecordShiftBanner.selected-duty-banner{display:flex!important;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px 14px;padding:7px 10px!important;margin:5px 0 10px!important;font-size:14px!important;line-height:1.35!important;border-width:1px!important}
+#dutyRecordShiftBanner .banner-piece{display:inline;font-size:14px!important;font-weight:700}
+#dutyRecordShiftBanner .banner-sep{opacity:.75}
+#dutyRecordShiftBanner .banner-staff{font-size:13px!important;font-weight:600}
+#dutyRecordPlaceholder{padding:12px!important}
+#dutyRecordPlaceholder .workspace-head{margin-bottom:6px}
+#dutyRulesManagement.duty-rules-hidden{display:none!important}
+#entryRulePreview.duty-preview-hidden{display:none!important}
+@media(max-width:600px){
+ #dutyRecordShiftBanner.selected-duty-banner{gap:4px 8px;padding:6px 7px!important;font-size:12px!important}
+ #dutyRecordShiftBanner .banner-piece,#dutyRecordShiftBanner .banner-staff{font-size:12px!important}
+}
+
+
+/* Arrival yes/no checkbox controls and compact one-line duty log rows */
+.arrival-check-wrap{min-width:0}
+.arrival-check-options{display:flex;align-items:center;gap:18px;min-height:40px;padding:7px 10px;border:1px solid var(--line,#42657a);border-radius:8px;background:rgba(0,0,0,.12)}
+.arrival-check-options label{display:inline-flex;align-items:center;gap:7px;margin:0!important;font-size:14px;cursor:pointer}
+.arrival-check-options input[type=checkbox]{width:18px;height:18px;accent-color:#38bdf8;margin:0}
+.arrival-value-hidden{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.duty-log-row{display:flex;align-items:center;gap:8px}
+.duty-log-summary{display:flex;align-items:center;flex:1;min-width:0;gap:clamp(8px,2vw,22px);flex-wrap:nowrap}
+.duty-log-summary>div{white-space:nowrap;min-width:0;font-size:12px}
+.duty-log-summary>div strong{font-weight:700}
+.duty-log-summary .time{margin-left:auto}
+@media(max-width:600px){
+ .duty-log-row{gap:6px}
+ .duty-log-summary{gap:7px;overflow:hidden}
+ .duty-log-summary>div{font-size:10px;overflow:hidden;text-overflow:ellipsis}
+ .duty-log-summary .time{margin-left:0}
+}
+
+
+/* Show assisting-person dropdown only when arrival is marked No */
+#recordAssistPersonWrap select{width:100%;min-height:40px}
+
 </style>
 </head>
 <body>
@@ -323,9 +376,9 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
           <p id="dutyShiftCreatedAt" class="hint">本次值班紀錄工作階段建立時間：尚未建立</p>
           <div class="notice" style="border-color:#e6b94f;background:#382e17;color:#ffecb2">目前為瀏覽器本機測試版，紀錄儲存在此瀏覽器；尚未連接醫院 REDCap 或共用資料庫。請勿輸入可識別真實病人的個資。</div>
           <form id="dutyRecordForm" class="form-grid">
-            <div><label for="recordStaff">處理人員</label><input id="recordStaff" required placeholder="請輸入值班 RT 姓名（正式版由登入資訊帶入）"></div>
+            <div><label for="recordStaff">值班人員</label><input id="recordStaff" required placeholder="請輸入值班 RT 姓名（正式版由登入資訊帶入）"></div>
             <div><label for="recordEmployeeId">員工編號</label><input id="recordEmployeeId" placeholder="正式版由登入資訊帶入"></div>
-            <div><label for="recordCallTime">接聽／事件時間</label><div class="time-entry-row"><input id="recordCallTime" type="datetime-local" required><button class="secondary" id="useCurrentCallTime" type="button">目前時間</button></div></div>
+            <div><label for="recordCallTime">接聽／事件時間（必填）</label><div class="time-entry-row"><input id="recordCallTime" type="datetime-local" required aria-required="true"><button class="secondary" id="useCurrentCallTime" type="button">目前時間</button></div></div>
             <fieldset class="full"><legend>值班處置類型（必選）</legend>
               <label class="inline-choice"><input type="radio" name="recordType" value="例行作業" required> 例行作業</label>
               <label class="inline-choice"><input type="radio" name="recordType" value="來電處置"> 來電處置</label>
@@ -338,18 +391,19 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
             <div id="recordInformWrap" class="hidden"><label for="recordInform">告知人員</label><select id="recordInform"><option value="">請選擇</option><option>醫生</option><option>護理師</option><option>書記</option><option>放射師</option><option>總值下</option><option>其他</option></select></div>
             <div id="recordInformOtherWrap" class="hidden"><label for="recordInformOther">其他告知人員</label><input id="recordInformOther" placeholder="請輸入人員"></div>
             <div id="recordTransferWrap" class="hidden"><label for="recordTransfer">轉接給誰</label><select id="recordTransfer"><option value="">請選擇</option><option>內科呼吸治療師</option><option>外科呼吸治療師</option><option>兒科呼吸治療師</option><option>總院呼吸治療師</option></select></div>
-            <div><label for="recordArrival">到場處理</label><select id="recordArrival" required><option value="">請選擇</option><option>是</option><option>否</option></select></div>
-            <div><label for="recordPatientId">病歷號（測試請勿填真實個資）</label><input id="recordPatientId" placeholder="測試資料可留空或使用虛構編號"></div>
+            <div class="arrival-check-wrap"><label>是否到場處理</label><div class="arrival-check-options"><label><input type="checkbox" id="recordArrivalYes" value="是"> 是</label><label><input type="checkbox" id="recordArrivalNo" value="否"> 否</label></div><select id="recordArrival" required class="arrival-value-hidden" aria-hidden="true" tabindex="-1"><option value="">請選擇</option><option>是</option><option>否</option></select><div id="recordAssistPersonWrap" class="hidden" style="margin-top:8px"><label for="recordAssistPerson">協助處理人員</label><select id="recordAssistPerson"><option value="">請選擇協助處理人員</option><option>醫生</option><option>護理師</option><option>電話溝通後解決</option><option>該區域值班RT</option><option>其他</option></select></div></div>
+            <div><label for="recordPatientId">病歷號（必填，六碼）</label><input id="recordPatientId" type="text" inputmode="numeric" autocomplete="off" required minlength="6" maxlength="6" pattern="[0-9]{6}" title="病歷號必須輸入恰好六位數字" placeholder="請輸入六位數字（測試請用虛構編號）"></div>
             <div><label for="recordUnitBed">單位床號</label><input id="recordUnitBed" placeholder="請簡易輸入如 3B-22"></div>
             <div class="full"><label for="recordDetails">處理細節與補充說明</label><textarea id="recordDetails" rows="4" placeholder="請記錄發現問題、處置內容、處置後結果及必要補充"></textarea></div>
             <div class="actions full"><button class="secondary" type="button" id="saveDutyDraftBtn">暫存</button><button class="primary" type="submit">確認儲存</button><button class="secondary" type="button" id="clearDutyRecordForm">新增／清空本筆</button></div>
           </form>
-          <div class="workspace-head" style="margin-top:18px"><h3>未完成／待補紀錄</h3></div>
-          <div id="dutyDraftList"></div>
-          <div class="workspace-head" style="margin-top:22px"><h3>已確認儲存紀錄</h3><button class="secondary" id="exportDutyRecords" type="button">匯出紀錄 CSV</button></div>
+          <div class="workspace-head" style="margin-top:18px"><h3>值班紀錄</h3></div>
+          
+          <div class="workspace-head" style="margin-top:12px"><button class="secondary" id="exportDutyRecords" type="button">匯出紀錄 CSV</button></div>
           <div id="dutySavedRecords"></div>
         </section>
       </div>
+      <div id="dutyRulesManagement">
       <div class="workspace-head" style="margin-top:20px">
         <div><h3>Duty Log｜值班規則管理</h3>
         <p class="hint">依 2026 年值班區域整理表建立可編輯規則。責任區域與 Cover troubleshooting 區域分開管理。</p></div>
@@ -381,6 +435,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
         </div>
         <div class="actions"><button class="primary" id="saveDutyRule" type="button">儲存規則</button></div>
       </section>
+      </div>
     </section>
 
     <section id="placeholderSection" class="hidden">
@@ -895,12 +950,20 @@ if($('changeDutyEntry')) $('changeDutyEntry').addEventListener('click',()=>{
 });
 if($('enterDutyRecord')) $('enterDutyRecord').addEventListener('click',()=>{
  $('dutyRecordPlaceholder').classList.remove('hidden');
- $('dutyRecordShiftBanner').innerHTML='<div><span>日期類型</span><strong>'+esc($('entryDateType').value)+'</strong></div><div><span>班別</span><strong>'+esc($('entryShift').value)+'</strong></div><div><span>組別</span><strong>'+esc($('entryGroup').value)+'組</strong></div>';
+ const staffName=getLoggedInRTName();
+ $('dutyRecordShiftBanner').classList.add('selected-duty-banner');
+ $('dutyRecordShiftBanner').innerHTML='<span class="banner-piece">'+esc($('entryDateType').value)+'</span><span class="banner-sep">｜</span><span class="banner-piece">'+esc($('entryShift').value)+'</span><span class="banner-sep">｜</span><span class="banner-piece">'+esc($('entryGroup').value)+'組</span><span class="banner-sep">｜</span><span class="banner-staff">值班人員：'+esc(staffName||'尚未取得登入姓名')+'</span>';
+ $('entryRulePreview').classList.add('duty-preview-hidden');
+ $('dutyRulesManagement').classList.add('duty-rules-hidden');
  initDutyRecordForm();
+ const staffInput=$('recordStaff');
+ if(staffInput){if(staffName){staffInput.value=staffName;staffInput.readOnly=true;staffInput.placeholder='已由登入資訊自動帶入';}else{staffInput.readOnly=false;staffInput.placeholder='尚未取得登入姓名，請手動輸入';}}
  $('dutyRecordPlaceholder').scrollIntoView({behavior:'smooth',block:'start'});
 });
 if($('backToDutyRules')) $('backToDutyRules').addEventListener('click',()=>{
  $('dutyRecordPlaceholder').classList.add('hidden');
+ $('entryRulePreview').classList.remove('duty-preview-hidden');
+ $('dutyRulesManagement').classList.remove('duty-rules-hidden');
  $('entryRulePreview').scrollIntoView({behavior:'smooth',block:'start'});
 });
 
@@ -996,14 +1059,29 @@ function updateDutyRecordTypeFields(){
 }
 function loadDutyRecords(){try{return JSON.parse(localStorage.getItem('rtDutyRecordsV1')||'[]')}catch(e){return []}}
 function renderDutyRecords(){
- const el=$('dutySavedRecords');if(!el)return;const rows=loadDutyRecords();
- if(!rows.length){el.innerHTML='<p class="hint">尚無已確認儲存紀錄。</p>';return;}
- el.innerHTML='<div class="saved-record-list">'+rows.slice().reverse().map(r=>'<div class="draft-card"><strong>建立時間：'+esc(r.createdAt?new Date(r.createdAt).toLocaleString('zh-TW'):'—')+'</strong><p>接聽／事件時間：'+esc(r.time||'')+'</p><p>'+esc(r.dateType+'｜'+r.shift+'｜'+r.group)+'　'+esc(r.type||'')+'</p><p>'+esc(r.problem+'／'+(r.detail||r.otherProblem||''))+'｜'+esc(r.unitBed||'')+'</p><p>處理人員：'+esc(r.staff||'')+'</p><button type="button" class="secondary" data-edit-record="'+esc(r.id)+'">修改紀錄</button></div>').join('')+'</div>';
- el.querySelectorAll('[data-edit-record]').forEach(btn=>btn.addEventListener('click',()=>{
-  const r=loadDutyRecords().find(x=>x.id===btn.dataset.editRecord);if(!r)return;
-  resetDutyEntryForm(false);editingDutyRecordId=r.id;
-  applyDutyFormFields({recordStaff:r.staff,recordEmployeeId:r.employeeId,recordCallTime:r.time,recordType:r.type,recordProblem:r.problem,recordDetailProblem:r.detail,recordOtherProblem:r.otherProblem,recordInform:r.inform,recordInformOther:r.informOther,recordTransfer:r.transfer,recordArrival:r.arrival,recordPatientId:r.patientId,recordUnitBed:r.unitBed,recordDetails:r.details});
-  const submit=$('dutyRecordForm').querySelector('button[type="submit"]');if(submit)submit.textContent='確認更新';
+ const el=$('dutySavedRecords');if(!el)return;
+ const saved=loadDutyRecords().map(r=>({...r,_status:'confirmed',_sortTime:r.createdAt||r.time||''}));
+ const drafts=getDutyDrafts().map(d=>{const f=d.fields||{};return {id:d.id,_status:'pending',_sortTime:d.createdAt||d.updatedAt||'',type:f.recordType||'未選擇',unitBed:f.recordUnitBed||'',time:f.recordCallTime||'',problem:f.recordProblem||'',dateType:f.entryDateType||$('entryDateType')?.value||'',shift:f.entryShift||$('entryShift')?.value||'',group:f.entryGroup||$('entryGroup')?.value||''};});
+ const all=[...saved,...drafts].sort((a,b)=>String(b._sortTime).localeCompare(String(a._sortTime)));
+ if(!all.length){el.innerHTML='<p class="hint">尚無值班紀錄。填寫後按「暫存」或「確認儲存」，紀錄會累加顯示於此。</p>';return;}
+ el.innerHTML=all.map(r=>{
+  const isDraft=r._status==='pending';
+  const time=r.time?String(r.time).replace('T',' '):'尚未記錄時間';
+  const type=r.type||'尚未選擇處置類型';
+  const bed=r.unitBed||'尚未填床號';
+  return '<div class="duty-log-row"><button type="button" class="duty-status-light '+(isDraft?'pending':'confirmed')+'" aria-label="'+(isDraft?'黃燈，開啟待補紀錄':'綠燈，開啟已儲存紀錄')+'" title="'+(isDraft?'暫存中，點選補充':'已確認儲存，點選修改')+'" data-open-duty="'+esc(r.id)+'" data-status="'+r._status+'"></button><div class="duty-log-summary"><div><strong>處置類型：</strong>'+esc(type)+'</div><div><strong>床號：</strong>'+esc(bed)+'</div><div class="time"><strong>時間：</strong>'+esc(time)+'</div></div></div>';
+ }).join('');
+ el.querySelectorAll('[data-open-duty]').forEach(btn=>btn.addEventListener('click',()=>{
+  const id=btn.dataset.openDuty;
+  if(btn.dataset.status==='pending'){
+   const d=getDutyDrafts().find(x=>x.id===id);if(!d)return;
+   resetDutyEntryForm(false);currentDutyDraftId=d.id;applyDutyFormFields(d.fields||{});
+  }else{
+   const r=loadDutyRecords().find(x=>x.id===id);if(!r)return;
+   resetDutyEntryForm(false);editingDutyRecordId=r.id;
+   applyDutyFormFields({recordStaff:r.staff,recordEmployeeId:r.employeeId,recordCallTime:r.time,recordType:r.type,recordProblem:r.problem,recordDetailProblem:r.detail,recordOtherProblem:r.otherProblem,recordInform:r.inform,recordInformOther:r.informOther,recordTransfer:r.transfer,recordArrival:r.arrival,recordPatientId:r.patientId,recordUnitBed:r.unitBed,recordDetails:r.details});
+   const submit=$('dutyRecordForm').querySelector('button[type="submit"]');if(submit)submit.textContent='確認更新';
+  }
   $('dutyRecordForm').scrollIntoView({behavior:'smooth',block:'start'});
  }));
 }
@@ -1026,6 +1104,7 @@ function applyDutyFormFields(fields){
   if(key==='recordType'){const el=form.querySelector('input[name="recordType"][value="'+CSS.escape(value)+'"]');if(el)el.checked=true;return;}
   const el=$(key);if(el)el.value=value;
  });
+ const arrivalVal=$('recordArrival')?.value||'';if($('recordArrivalYes'))$('recordArrivalYes').checked=arrivalVal==='是';if($('recordArrivalNo'))$('recordArrivalNo').checked=arrivalVal==='否';updateArrivalAssistVisibility();
  updateRecordProblemDetails();updateDutyRecordTypeFields();
  $('recordOtherProblemWrap').classList.toggle('hidden',!['其他','其他／以上皆非'].includes($('recordProblem').value)&&$('recordDetailProblem').value!=='其他／以上皆非');
  $('recordInformOtherWrap').classList.toggle('hidden',$('recordInform').value!=='其他');
@@ -1034,15 +1113,16 @@ function saveDutyFormDraft(){
  const fields=getDutyFormFields(),drafts=getDutyDrafts(),now=new Date().toISOString();
  let draft=drafts.find(d=>d.id===currentDutyDraftId);
  if(!draft){draft={id:'DRAFT-'+Date.now(),createdAt:now};drafts.push(draft);currentDutyDraftId=draft.id;}
- draft.fields=fields;draft.updatedAt=now;
- try{localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyDrafts();}catch(e){}
+ draft.fields={...fields,entryDateType:$('entryDateType')?.value||'',entryShift:$('entryShift')?.value||'',entryGroup:$('entryGroup')?.value||''};draft.updatedAt=now;
+ try{localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyRecords();}catch(e){}
 }
 function saveCurrentAsDraft(){
+ if(!$('recordCallTime')?.value){alert('請先輸入接聽／事件時間，或點選「目前時間」自動帶入；填寫時間後才能暫存。');$('recordCallTime')?.focus();return;}
  const fields=getDutyFormFields(),drafts=getDutyDrafts(),now=new Date().toISOString();
  let draft=drafts.find(d=>d.id===currentDutyDraftId);
  if(!draft){draft={id:'DRAFT-'+Date.now(),createdAt:now};drafts.push(draft);currentDutyDraftId=draft.id;}
- draft.fields=fields;draft.updatedAt=now;
- try{localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyDrafts();alert('本筆已暫存。可繼續新增下一通電話，稍後再從「未完成／待補紀錄」接續。');resetDutyEntryForm(false);}catch(e){alert('暫存失敗，請確認瀏覽器允許本機儲存。');}
+ draft.fields={...fields,entryDateType:$('entryDateType')?.value||'',entryShift:$('entryShift')?.value||'',entryGroup:$('entryGroup')?.value||''};draft.updatedAt=now;
+ try{localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));alert('本筆已暫存並加入下方「值班紀錄」。表單已清空，可立即記錄下一通電話；稍後點選黃燈可補充內容。');resetDutyEntryForm(false);renderDutyRecords();}catch(e){alert('暫存失敗，請確認瀏覽器允許本機儲存。');}
 }
 function renderDutyDrafts(){
  const el=$('dutyDraftList');if(!el)return;
@@ -1058,19 +1138,30 @@ function renderDutyDrafts(){
  }));
  el.querySelectorAll('[data-delete-draft]').forEach(btn=>btn.addEventListener('click',()=>{
   if(!confirm('確定刪除此筆待補紀錄？'))return;
-  const drafts=getDutyDrafts().filter(d=>d.id!==btn.dataset.deleteDraft);localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));if(currentDutyDraftId===btn.dataset.deleteDraft)currentDutyDraftId=null;renderDutyDrafts();
+  const drafts=getDutyDrafts().filter(d=>d.id!==btn.dataset.deleteDraft);localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));if(currentDutyDraftId===btn.dataset.deleteDraft)currentDutyDraftId=null;renderDutyRecords();
  }));
 }
 function resetDutyEntryForm(clearDraft=true){
  const form=$('dutyRecordForm');if(!form)return;
- if(clearDraft&&currentDutyDraftId){const drafts=getDutyDrafts().filter(d=>d.id!==currentDutyDraftId);localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyDrafts();}
+ if(clearDraft&&currentDutyDraftId){const drafts=getDutyDrafts().filter(d=>d.id!==currentDutyDraftId);localStorage.setItem(dutyDraftKey,JSON.stringify(drafts));renderDutyRecords();}
  form.reset();currentDutyDraftId=null;editingDutyRecordId=null;updateRecordProblemDetails();updateDutyRecordTypeFields();
  $('recordOtherProblemWrap').classList.add('hidden');$('recordInformOtherWrap').classList.add('hidden');
  const submit=form.querySelector('button[type="submit"]');if(submit)submit.textContent='確認儲存';
 }
+function updateArrivalAssistVisibility(){
+ const noSelected=$('recordArrival')?.value==='否';
+ const wrap=$('recordAssistPersonWrap'),sel=$('recordAssistPerson');
+ if(wrap)wrap.classList.toggle('hidden',!noSelected);
+ if(sel){sel.required=!!noSelected;if(!noSelected)sel.value='';}
+}
 function initDutyRecordForm(){
+ const arrivalYes=$('recordArrivalYes'),arrivalNo=$('recordArrivalNo'),arrivalValue=$('recordArrival');
+ const syncArrivalChecks=(value)=>{if(arrivalYes)arrivalYes.checked=value==='是';if(arrivalNo)arrivalNo.checked=value==='否';};
+ if(arrivalYes&&!arrivalYes.dataset.bound){arrivalYes.dataset.bound='1';arrivalYes.addEventListener('change',()=>{if(arrivalYes.checked){arrivalNo.checked=false;arrivalValue.value='是';}else arrivalValue.value='';updateArrivalAssistVisibility();saveDutyFormDraft();});}
+ if(arrivalNo&&!arrivalNo.dataset.bound){arrivalNo.dataset.bound='1';arrivalNo.addEventListener('change',()=>{if(arrivalNo.checked){arrivalYes.checked=false;arrivalValue.value='否';}else arrivalValue.value='';updateArrivalAssistVisibility();saveDutyFormDraft();});}
+ syncArrivalChecks(arrivalValue?.value||'');updateArrivalAssistVisibility();
  if(!$('dutyRecordForm'))return;
- populateRecordProblem();updateRecordProblemDetails();renderDutyRecords();renderDutyDrafts();
+ populateRecordProblem();updateRecordProblemDetails();renderDutyRecords();
  $('dutyRecordForm').querySelectorAll('input,select,textarea').forEach(el=>{el.addEventListener('input',saveDutyFormDraft);el.addEventListener('change',saveDutyFormDraft)});
  $('useCurrentCallTime').addEventListener('click',()=>{const d=new Date();const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);$('recordCallTime').value=local;$('recordCallTime').dispatchEvent(new Event('change',{bubbles:true}));});
  $('saveDutyDraftBtn').addEventListener('click',saveCurrentAsDraft);
@@ -1081,10 +1172,13 @@ function initDutyRecordForm(){
  $('dutyRecordForm').addEventListener('submit',e=>{
    e.preventDefault();
    const type=document.querySelector('input[name="recordType"]:checked')?.value;
+   if(!$('recordCallTime').value){alert('請先輸入或點選「目前時間」填入接聽／事件時間，才能繼續紀錄。');$('recordCallTime').focus();return;}
+   const mrn=$('recordPatientId').value.trim();
+   if(!/^[0-9]{6}$/.test(mrn)){alert('病歷號必須輸入恰好六位數字。測試時請使用虛構的六碼編號。');$('recordPatientId').focus();return;}
    if(!type){alert('請選擇值班處置類型');return;}
    const old=editingDutyRecordId?loadDutyRecords().find(r=>r.id===editingDutyRecordId):null;
    const rec={...(old||{}),id:old?.id||'DL-'+Date.now(),dateType:$('entryDateType').value,shift:$('entryShift').value,group:$('entryGroup').value,staff:$('recordStaff').value.trim(),employeeId:$('recordEmployeeId').value.trim(),time:$('recordCallTime').value,type,problem:$('recordProblem').value,detail:$('recordDetailProblem').value,otherProblem:$('recordOtherProblem').value,inform:$('recordInform').value,informOther:$('recordInformOther').value,transfer:$('recordTransfer').value,arrival:$('recordArrival').value,patientId:$('recordPatientId').value.trim(),unitBed:$('recordUnitBed').value.trim(),details:$('recordDetails').value,createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-   if(!rec.staff||!rec.time||!rec.problem||!rec.arrival){alert('請完成處理人員、接聽／事件時間、處理問題及到場處理欄位。');return;}
+   if(!rec.staff||!rec.time||!rec.problem||!rec.arrival||!/^[0-9]{6}$/.test(rec.patientId)){alert('請完成值班人員、接聽／事件時間、六碼病歷號、處理問題及到場處理欄位。');return;}
    if(['來電處置','臨時處置'].includes(type)&&!rec.inform){alert('請選擇告知人員');return;}
    if(type==='轉接'&&!rec.transfer){alert('請選擇轉接對象');return;}
    const rows=loadDutyRecords(),idx=rows.findIndex(r=>r.id===rec.id);
@@ -1093,7 +1187,7 @@ function initDutyRecordForm(){
     localStorage.setItem('rtDutyRecordsV1',JSON.stringify(rows));
     if(currentDutyDraftId){localStorage.setItem(dutyDraftKey,JSON.stringify(getDutyDrafts().filter(d=>d.id!==currentDutyDraftId)));}
     currentDutyDraftId=null;editingDutyRecordId=null;
-    renderDutyRecords();renderDutyDrafts();alert(old?'已更新並確認儲存紀錄。':'已確認儲存紀錄。');
+    renderDutyRecords();alert(old?'已更新並確認儲存紀錄。':'已確認儲存紀錄。');
     resetDutyEntryForm(false);
    }catch(err){alert('儲存失敗：瀏覽器可能無法使用本機儲存。');}
  });
