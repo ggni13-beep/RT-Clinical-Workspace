@@ -256,6 +256,31 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 /* Show assisting-person dropdown only when arrival is marked No */
 #recordAssistPersonWrap select{width:100%;min-height:40px}
 
+
+#recordINOWrap .form-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#recordINOWrap input{width:100%;box-sizing:border-box}
+@media(max-width:700px){#recordINOWrap .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Keep arrival status, MRN and unit/bed together in one compact row */
+.arrival-patient-row{display:grid;grid-template-columns:minmax(180px,1.05fr) minmax(150px,1fr) minmax(150px,1fr);gap:10px;align-items:start}
+.arrival-patient-row>.arrival-check-wrap{min-width:0}
+.arrival-patient-row>div:not(.arrival-check-wrap){min-width:0}
+.arrival-patient-row input{width:100%;box-sizing:border-box}
+@media(max-width:600px){.arrival-patient-row{grid-template-columns:1fr 1fr;gap:8px}.arrival-patient-row>.arrival-check-wrap{grid-column:1/-1}.arrival-patient-row>div:not(.arrival-check-wrap) label{font-size:12px}}
+
+
+/* Duty log list: status light > type > problem > bed > time in one row */
+#dutySavedRecords .duty-log-row{display:flex;align-items:center;gap:10px}
+#dutySavedRecords .duty-log-summary{display:flex;align-items:center;flex:1;min-width:0;gap:clamp(8px,1.5vw,20px);flex-wrap:nowrap;grid-template-columns:none}
+#dutySavedRecords .duty-log-summary>div{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+#dutySavedRecords .duty-log-summary .time{grid-column:auto;margin-left:auto;flex-shrink:0}
+@media(max-width:600px){
+ #dutySavedRecords .duty-log-row{gap:6px;padding:7px}
+ #dutySavedRecords .duty-log-summary{gap:7px;overflow:hidden}
+ #dutySavedRecords .duty-log-summary>div{font-size:10px}
+ #dutySavedRecords .duty-log-summary .time{margin-left:0}
+}
+
 </style>
 </head>
 <body>
@@ -391,9 +416,26 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
             <div id="recordInformWrap" class="hidden"><label for="recordInform">告知人員</label><select id="recordInform"><option value="">請選擇</option><option>醫生</option><option>護理師</option><option>書記</option><option>放射師</option><option>總值下</option><option>其他</option></select></div>
             <div id="recordInformOtherWrap" class="hidden"><label for="recordInformOther">其他告知人員</label><input id="recordInformOther" placeholder="請輸入人員"></div>
             <div id="recordTransferWrap" class="hidden"><label for="recordTransfer">轉接給誰</label><select id="recordTransfer"><option value="">請選擇</option><option>內科呼吸治療師</option><option>外科呼吸治療師</option><option>兒科呼吸治療師</option><option>總院呼吸治療師</option></select></div>
-            <div class="arrival-check-wrap"><label>是否到場處理</label><div class="arrival-check-options"><label><input type="checkbox" id="recordArrivalYes" value="是"> 是</label><label><input type="checkbox" id="recordArrivalNo" value="否"> 否</label></div><select id="recordArrival" required class="arrival-value-hidden" aria-hidden="true" tabindex="-1"><option value="">請選擇</option><option>是</option><option>否</option></select><div id="recordAssistPersonWrap" class="hidden" style="margin-top:8px"><label for="recordAssistPerson">協助處理人員</label><select id="recordAssistPerson"><option value="">請選擇協助處理人員</option><option>醫生</option><option>護理師</option><option>電話溝通後解決</option><option>該區域值班RT</option><option>其他</option></select></div></div>
-            <div><label for="recordPatientId">病歷號（必填，六碼）</label><input id="recordPatientId" type="text" inputmode="numeric" autocomplete="off" required minlength="6" maxlength="6" pattern="[0-9]{6}" title="病歷號必須輸入恰好六位數字" placeholder="請輸入六位數字（測試請用虛構編號）"></div>
-            <div><label for="recordUnitBed">單位床號</label><input id="recordUnitBed" placeholder="請簡易輸入如 3B-22"></div>
+            <div class="arrival-patient-row full">
+              <div class="arrival-check-wrap"><label>是否到場處理</label><div class="arrival-check-options"><label><input type="checkbox" id="recordArrivalYes" value="是"> 是</label><label><input type="checkbox" id="recordArrivalNo" value="否"> 否</label></div><select id="recordArrival" required class="arrival-value-hidden" aria-hidden="true" tabindex="-1"><option value="">請選擇</option><option>是</option><option>否</option></select><div id="recordAssistPersonWrap" class="hidden" style="margin-top:8px"><label for="recordAssistPerson">協助處理人員</label><select id="recordAssistPerson"><option value="">請選擇協助處理人員</option><option>醫生</option><option>護理師</option><option>電話溝通後解決</option><option>該區域值班RT</option><option>其他</option></select></div></div>
+              <div><label for="recordPatientId">病歷號（必填，六碼）</label><input id="recordPatientId" type="text" inputmode="numeric" autocomplete="off" required minlength="6" maxlength="6" pattern="[0-9]{6}" title="病歷號必須輸入恰好六位數字" placeholder="請輸入六位數字（測試請用虛構編號）"></div>
+              <div><label for="recordUnitBed">單位床號</label><input id="recordUnitBed" placeholder="請簡易輸入如 3B-22"></div>
+            </div>
+            <fieldset id="recordINOWrap" class="full hidden" style="border:1px solid var(--line,#42657a);border-radius:8px;padding:12px;margin:0">
+              <legend>iNO 專區（例行作業 → check iNO）</legend>
+              <div class="form-grid">
+                <div><label for="inoSetting">iNO設定</label><input id="inoSetting" type="number" step="any" required></div>
+                <div><label for="inoNOConcentration">NO濃度</label><input id="inoNOConcentration" type="number" step="any" required></div>
+                <div><label for="inoNO2Concentration">NO2濃度</label><input id="inoNO2Concentration" type="number" step="any" required></div>
+                <div><label for="inoSpO2">血氧</label><input id="inoSpO2" type="number" step="any" required></div>
+                <div><label for="inoCylinderRemaining">鋼瓶餘量</label><input id="inoCylinderRemaining" type="number" step="any" required></div>
+                <div><label for="inoBloodPressure">血壓</label><input id="inoBloodPressure" type="text" required placeholder="例如 120/80"></div>
+                <div><label for="inoHeartRate">心跳</label><input id="inoHeartRate" type="number" step="any" required></div>
+                <div><label for="inoMAP">MAP</label><input id="inoMAP" type="number" step="any" required></div>
+                <div><label for="inoPEEP">PEEP</label><input id="inoPEEP" type="number" step="any" required></div>
+                <div><label for="inoFIO2">FIO2</label><input id="inoFIO2" type="number" step="any" required></div>
+              </div>
+            </fieldset>
             <div class="full"><label for="recordDetails">處理細節與補充說明</label><textarea id="recordDetails" rows="4" placeholder="請記錄發現問題、處置內容、處置後結果及必要補充"></textarea></div>
             <div class="actions full"><button class="secondary" type="button" id="saveDutyDraftBtn">暫存</button><button class="primary" type="submit">確認儲存</button><button class="secondary" type="button" id="clearDutyRecordForm">新增／清空本筆</button></div>
           </form>
@@ -879,7 +921,7 @@ function populateSelect(select, values, placeholder){
  select.disabled=values.length===0;
 }
 const dutyEntryOptions = {
- '平日': {'小夜':['總','外','兒'], '大夜':['總','兒']},
+ '平日': {'白班':['總','外','兒'], '小夜':['總','外','兒'], '大夜':['總','兒']},
  '週六': {'白班':['總','外','兒'], '小夜':['總','外','兒'], '大夜':['總','兒']},
  '週日（國定／颱風）': {'白班':['總','外','兒'], '小夜':['總','兒'], '大夜':['總','兒']}
 };
@@ -1046,16 +1088,26 @@ function populateRecordProblem(){
  const sel=$('recordProblem'); if(!sel)return;
  sel.innerHTML='<option value="">請選擇處理問題</option>'+dutyProblemOptions.map(x=>'<option>'+esc(x)+'</option>').join('');
 }
+function updateINoFieldsVisibility(){
+ const type=document.querySelector('input[name="recordType"]:checked')?.value||'';
+ const problem=$('recordProblem')?.value||'';
+ const arrival=$('recordArrival')?.value||'';
+ const show=type==='例行作業'&&String(problem).trim().toLowerCase()==='check ino'&&['是','否'].includes(arrival);
+ const wrap=$('recordINOWrap');if(wrap)wrap.classList.toggle('hidden',!show);
+ if(wrap)wrap.querySelectorAll('input').forEach(el=>{el.required=show;});
+}
 function updateRecordProblemDetails(){
  const p=$('recordProblem').value,sel=$('recordDetailProblem');
  const opts=dutyDetailOptions[p]||['一般例行作業','設定確認','拆備機','送檢查','病人評估','其他／以上皆非'];
  sel.innerHTML='<option value="">請選擇細項</option>'+opts.map(x=>'<option>'+esc(x)+'</option>').join('');
  $('recordOtherProblemWrap').classList.toggle('hidden',!(p==='其他'||sel.value==='其他／以上皆非'));
+ updateINoFieldsVisibility();
 }
 function updateDutyRecordTypeFields(){
  const type=document.querySelector('input[name="recordType"]:checked')?.value||'';
  $('recordInformWrap').classList.toggle('hidden',!['來電處置','臨時處置'].includes(type));
  $('recordTransferWrap').classList.toggle('hidden',type!=='轉接');
+ updateINoFieldsVisibility();
 }
 function loadDutyRecords(){try{return JSON.parse(localStorage.getItem('rtDutyRecordsV1')||'[]')}catch(e){return []}}
 function renderDutyRecords(){
@@ -1069,7 +1121,8 @@ function renderDutyRecords(){
   const time=r.time?String(r.time).replace('T',' '):'尚未記錄時間';
   const type=r.type||'尚未選擇處置類型';
   const bed=r.unitBed||'尚未填床號';
-  return '<div class="duty-log-row"><button type="button" class="duty-status-light '+(isDraft?'pending':'confirmed')+'" aria-label="'+(isDraft?'黃燈，開啟待補紀錄':'綠燈，開啟已儲存紀錄')+'" title="'+(isDraft?'暫存中，點選補充':'已確認儲存，點選修改')+'" data-open-duty="'+esc(r.id)+'" data-status="'+r._status+'"></button><div class="duty-log-summary"><div><strong>處置類型：</strong>'+esc(type)+'</div><div><strong>床號：</strong>'+esc(bed)+'</div><div class="time"><strong>時間：</strong>'+esc(time)+'</div></div></div>';
+  const problem=r.problem||'尚未選擇處理問題';
+  return '<div class="duty-log-row"><button type="button" class="duty-status-light '+(isDraft?'pending':'confirmed')+'" aria-label="'+(isDraft?'黃燈，開啟待補紀錄':'綠燈，開啟已儲存紀錄')+'" title="'+(isDraft?'暫存中，點選補充':'已確認儲存，點選修改')+'" data-open-duty="'+esc(r.id)+'" data-status="'+r._status+'"></button><div class="duty-log-summary"><div><strong>處置類型：</strong>'+esc(type)+'</div><div><strong>處理問題：</strong>'+esc(problem)+'</div><div><strong>床號：</strong>'+esc(bed)+'</div><div class="time"><strong>時間：</strong>'+esc(time)+'</div></div></div>';
  }).join('');
  el.querySelectorAll('[data-open-duty]').forEach(btn=>btn.addEventListener('click',()=>{
   const id=btn.dataset.openDuty;
@@ -1079,7 +1132,7 @@ function renderDutyRecords(){
   }else{
    const r=loadDutyRecords().find(x=>x.id===id);if(!r)return;
    resetDutyEntryForm(false);editingDutyRecordId=r.id;
-   applyDutyFormFields({recordStaff:r.staff,recordEmployeeId:r.employeeId,recordCallTime:r.time,recordType:r.type,recordProblem:r.problem,recordDetailProblem:r.detail,recordOtherProblem:r.otherProblem,recordInform:r.inform,recordInformOther:r.informOther,recordTransfer:r.transfer,recordArrival:r.arrival,recordPatientId:r.patientId,recordUnitBed:r.unitBed,recordDetails:r.details});
+   applyDutyFormFields({recordStaff:r.staff,recordEmployeeId:r.employeeId,recordCallTime:r.time,recordType:r.type,recordProblem:r.problem,recordDetailProblem:r.detail,recordOtherProblem:r.otherProblem,recordInform:r.inform,recordInformOther:r.informOther,recordTransfer:r.transfer,recordArrival:r.arrival,recordPatientId:r.patientId,recordUnitBed:r.unitBed,recordDetails:r.details,inoSetting:r.inoSetting,inoNOConcentration:r.inoNOConcentration,inoNO2Concentration:r.inoNO2Concentration,inoSpO2:r.inoSpO2,inoCylinderRemaining:r.inoCylinderRemaining,inoBloodPressure:r.inoBloodPressure,inoHeartRate:r.inoHeartRate,inoMAP:r.inoMAP,inoPEEP:r.inoPEEP,inoFIO2:r.inoFIO2});
    const submit=$('dutyRecordForm').querySelector('button[type="submit"]');if(submit)submit.textContent='確認更新';
   }
   $('dutyRecordForm').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1153,12 +1206,14 @@ function updateArrivalAssistVisibility(){
  const wrap=$('recordAssistPersonWrap'),sel=$('recordAssistPerson');
  if(wrap)wrap.classList.toggle('hidden',!noSelected);
  if(sel){sel.required=!!noSelected;if(!noSelected)sel.value='';}
+
+ updateINoFieldsVisibility();
 }
 function initDutyRecordForm(){
  const arrivalYes=$('recordArrivalYes'),arrivalNo=$('recordArrivalNo'),arrivalValue=$('recordArrival');
  const syncArrivalChecks=(value)=>{if(arrivalYes)arrivalYes.checked=value==='是';if(arrivalNo)arrivalNo.checked=value==='否';};
- if(arrivalYes&&!arrivalYes.dataset.bound){arrivalYes.dataset.bound='1';arrivalYes.addEventListener('change',()=>{if(arrivalYes.checked){arrivalNo.checked=false;arrivalValue.value='是';}else arrivalValue.value='';updateArrivalAssistVisibility();saveDutyFormDraft();});}
- if(arrivalNo&&!arrivalNo.dataset.bound){arrivalNo.dataset.bound='1';arrivalNo.addEventListener('change',()=>{if(arrivalNo.checked){arrivalYes.checked=false;arrivalValue.value='否';}else arrivalValue.value='';updateArrivalAssistVisibility();saveDutyFormDraft();});}
+ if(arrivalYes&&!arrivalYes.dataset.bound){arrivalYes.dataset.bound='1';arrivalYes.addEventListener('change',()=>{if(arrivalYes.checked){arrivalNo.checked=false;arrivalValue.value='是';}else arrivalValue.value='';updateArrivalAssistVisibility();updateINoFieldsVisibility();saveDutyFormDraft();});}
+ if(arrivalNo&&!arrivalNo.dataset.bound){arrivalNo.dataset.bound='1';arrivalNo.addEventListener('change',()=>{if(arrivalNo.checked){arrivalYes.checked=false;arrivalValue.value='否';}else arrivalValue.value='';updateArrivalAssistVisibility();updateINoFieldsVisibility();saveDutyFormDraft();});}
  syncArrivalChecks(arrivalValue?.value||'');updateArrivalAssistVisibility();
  if(!$('dutyRecordForm'))return;
  populateRecordProblem();updateRecordProblemDetails();renderDutyRecords();
@@ -1177,7 +1232,7 @@ function initDutyRecordForm(){
    if(!/^[0-9]{6}$/.test(mrn)){alert('病歷號必須輸入恰好六位數字。測試時請使用虛構的六碼編號。');$('recordPatientId').focus();return;}
    if(!type){alert('請選擇值班處置類型');return;}
    const old=editingDutyRecordId?loadDutyRecords().find(r=>r.id===editingDutyRecordId):null;
-   const rec={...(old||{}),id:old?.id||'DL-'+Date.now(),dateType:$('entryDateType').value,shift:$('entryShift').value,group:$('entryGroup').value,staff:$('recordStaff').value.trim(),employeeId:$('recordEmployeeId').value.trim(),time:$('recordCallTime').value,type,problem:$('recordProblem').value,detail:$('recordDetailProblem').value,otherProblem:$('recordOtherProblem').value,inform:$('recordInform').value,informOther:$('recordInformOther').value,transfer:$('recordTransfer').value,arrival:$('recordArrival').value,patientId:$('recordPatientId').value.trim(),unitBed:$('recordUnitBed').value.trim(),details:$('recordDetails').value,createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+   const rec={...(old||{}),id:old?.id||'DL-'+Date.now(),dateType:$('entryDateType').value,shift:$('entryShift').value,group:$('entryGroup').value,staff:$('recordStaff').value.trim(),employeeId:$('recordEmployeeId').value.trim(),time:$('recordCallTime').value,type,problem:$('recordProblem').value,detail:$('recordDetailProblem').value,otherProblem:$('recordOtherProblem').value,inform:$('recordInform').value,informOther:$('recordInformOther').value,transfer:$('recordTransfer').value,arrival:$('recordArrival').value,patientId:$('recordPatientId').value.trim(),unitBed:$('recordUnitBed').value.trim(),details:$('recordDetails').value,inoSetting:$('inoSetting')?.value||'',inoNOConcentration:$('inoNOConcentration')?.value||'',inoNO2Concentration:$('inoNO2Concentration')?.value||'',inoSpO2:$('inoSpO2')?.value||'',inoCylinderRemaining:$('inoCylinderRemaining')?.value||'',inoBloodPressure:$('inoBloodPressure')?.value||'',inoHeartRate:$('inoHeartRate')?.value||'',inoMAP:$('inoMAP')?.value||'',inoPEEP:$('inoPEEP')?.value||'',inoFIO2:$('inoFIO2')?.value||'',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
    if(!rec.staff||!rec.time||!rec.problem||!rec.arrival||!/^[0-9]{6}$/.test(rec.patientId)){alert('請完成值班人員、接聽／事件時間、六碼病歷號、處理問題及到場處理欄位。');return;}
    if(['來電處置','臨時處置'].includes(type)&&!rec.inform){alert('請選擇告知人員');return;}
    if(type==='轉接'&&!rec.transfer){alert('請選擇轉接對象');return;}
@@ -1193,11 +1248,27 @@ function initDutyRecordForm(){
  });
  $('clearDutyRecordForm').addEventListener('click',()=>{if(confirm('要結束目前這筆編輯並新增另一筆紀錄嗎？已自動暫存的草稿仍會保留。'))resetDutyEntryForm(false);});
  $('exportDutyRecords').addEventListener('click',()=>{
-   const rows=loadDutyRecords();if(!rows.length){alert('目前沒有可匯出的紀錄');return;}
-   const keys=['time','dateType','shift','group','staff','employeeId','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','createdAt'];
-   const headers=['事件時間','日期類型','班別','組別','處理人員','員工編號','值班處置類型','處理問題','問題細項','其他問題','告知人員','其他告知人員','轉接給誰','到場處理','病歷號','單位床號','處理細節','建立時間'];
-   const csv='\\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
-   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_Records.csv';a.click();URL.revokeObjectURL(a.href);
+   const saved=loadDutyRecords().map(r=>({...r,recordStatus:'已確認儲存'}));
+   const drafts=getDutyDrafts().map(d=>{
+     const f=d.fields||{};
+     return {
+       id:d.id, recordStatus:'暫存待補',
+       dateType:f.entryDateType||'',shift:f.entryShift||'',group:f.entryGroup||'',
+       staff:f.recordStaff||'',employeeId:f.recordEmployeeId||'',
+       time:f.recordCallTime||'',type:f.recordType||'',problem:f.recordProblem||'',
+       detail:f.recordDetailProblem||'',otherProblem:f.recordOtherProblem||'',
+       inform:f.recordInform||'',informOther:f.recordInformOther||'',
+       transfer:f.recordTransfer||'',arrival:f.recordArrival||'',
+       patientId:f.recordPatientId||'',unitBed:f.recordUnitBed||'',
+       details:f.recordDetails||'',createdAt:d.createdAt||'',updatedAt:d.updatedAt||''
+     };
+   });
+   const rows=[...saved,...drafts].sort((a,b)=>String(a.time||a.createdAt||'').localeCompare(String(b.time||b.createdAt||'')));
+   if(!rows.length){alert('目前沒有可匯出的值班紀錄（包含已確認儲存與暫存紀錄）。');return;}
+   const keys=['id','recordStatus','time','dateType','shift','group','staff','employeeId','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','inoSetting','inoNOConcentration','inoNO2Concentration','inoSpO2','inoCylinderRemaining','inoBloodPressure','inoHeartRate','inoMAP','inoPEEP','inoFIO2','createdAt','updatedAt'];
+   const headers=['紀錄編號','紀錄狀態','接聽／事件時間','日期類型','班別','組別','值班人員','員工編號','值班處置類型','處理問題','問題／警報細項','其他問題補充','告知人員','其他告知人員','轉接給誰','是否到場處理','病歷號','單位床號','處理細節與補充說明','iNO設定','NO濃度','NO2濃度','血氧','鋼瓶餘量','血壓','心跳','MAP','PEEP','FIO2','建立時間','最後修改時間'];
+   const csv='\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_All_Shifts_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(a.href);
  });
 }
 
