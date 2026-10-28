@@ -380,10 +380,10 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
 
     <section id="dutySection" class="hidden">
       <div id="dutyEntryFlow">
-        <div class="workspace-head">
-          <div><h3>Duty Log｜值班紀錄入口</h3>
-          <p class="hint">請先選擇日期類型、班別與組別，確認當班規則後才能進入值班紀錄。</p></div>
-          <span class="pill">先選班別，再開始紀錄</span>
+        <div class="workspace-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div><h3 style="margin:0">Duty Log｜值班紀錄入口</h3>
+          <p class="hint" style="margin:5px 0 0">請先選擇日期類型、班別與組別，確認當班規則後才能進入值班紀錄。</p></div>
+          <button class="secondary" id="toggleDutyExportOptions" type="button" aria-expanded="false" onclick="toggleDutyExportPanel(event)" style="flex-shrink:0">值班紀錄匯出</button>
         </div>
         <div class="filters">
           <div><label for="entryDateType">日期類型</label><select id="entryDateType"><option value="">請先選日期類型</option></select></div>
@@ -395,9 +395,8 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
           <p id="resumeDutySessionText" style="margin:6px 0 10px">可接續原班別的值班紀錄，不必重新建立。</p>
           <button class="primary" id="resumeDutySessionBtn" type="button">接續上次值班紀錄</button>
         </div>
-        <div class="actions" id="entryActionRow" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div class="actions" id="entryActionRow">
           <button class="primary" id="confirmDutyEntry" type="button">確認班別與組別</button>
-          <button class="secondary" id="toggleDutyExportOptions" type="button" aria-expanded="false" style="padding:10px 16px;font-size:14px;min-height:44px">值班紀錄匯出</button>
         </div>
         <div class="detail hidden" id="entryPageExportPanel" style="margin-top:8px;padding:10px 12px">
           <div id="entryDutyExportOptions" style="margin-top:0">
@@ -1361,20 +1360,27 @@ function initDutyRecordForm(){
    const csv='\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_'+periodLabel+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
  });
- if($('toggleDutyExportOptions'))$('toggleDutyExportOptions').addEventListener('click',()=>{
- const panel=$('entryPageExportPanel'),btn=$('toggleDutyExportOptions');
- if(!panel){alert('匯出選項尚未載入，請重新整理頁面後再試。');return;}
+ function toggleDutyExportPanel(event){
+ const panel=document.getElementById('entryPageExportPanel');
+ const btn=document.getElementById('toggleDutyExportOptions');
+ if(!panel){alert('找不到匯出區塊，請重新開啟最新版 HTML。');return;}
  const opening=panel.classList.contains('hidden');
- panel.classList.toggle('hidden',!opening);btn.setAttribute('aria-expanded',String(opening));
+ panel.classList.toggle('hidden',!opening);
+ if(btn)btn.setAttribute('aria-expanded',opening?'true':'false');
  if(opening){
-   const today=new Date().toISOString().slice(0,10);
-   if($('entryDutyExportEnd')&&!$('entryDutyExportEnd').value)$('entryDutyExportEnd').value=today;
-   if($('entryDutyExportStart')&&!$('entryDutyExportStart').value)$('entryDutyExportStart').value=today;
+   const now=new Date();
+   const localDate=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+   const startInput=document.getElementById('entryDutyExportStart');
+   const endInput=document.getElementById('entryDutyExportEnd');
+   if(startInput&&!startInput.value)startInput.value=localDate;
+   if(endInput&&!endInput.value)endInput.value=localDate;
    panel.scrollIntoView({behavior:'smooth',block:'nearest'});
  }
-});
+}
 if($('cancelDutyExportOptions'))$('cancelDutyExportOptions').addEventListener('click',()=>{
- $('entryDutyExportOptions').classList.add('hidden');$('toggleDutyExportOptions').setAttribute('aria-expanded','false');
+ const panel=document.getElementById('entryPageExportPanel');
+ if(panel)panel.classList.add('hidden');
+ $('toggleDutyExportOptions').setAttribute('aria-expanded','false');
 });
 $('entryPageExportDutyRecords').addEventListener('click',()=>{
    const startValue=$('entryDutyExportStart')?.value||'';
