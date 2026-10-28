@@ -383,9 +383,18 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
         <div class="workspace-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <div><h3 style="margin:0">Duty Log｜值班紀錄入口</h3>
           <p class="hint" style="margin:5px 0 0">請先選擇日期類型、班別與組別，確認當班規則後才能進入值班紀錄。</p></div>
-          <button class="secondary" id="toggleDutyExportOptions" type="button" aria-expanded="false" onclick="toggleDutyExportPanel(event)" style="flex-shrink:0">值班紀錄匯出</button>
+          <button class="secondary" id="toggleDutyExportOptions" type="button" aria-expanded="false" style="flex-shrink:0" onclick="var p=document.getElementById('entryPageExportPanel');if(p){var opening=p.classList.contains('hidden');p.classList.toggle('hidden',!opening);this.setAttribute('aria-expanded',opening?'true':'false');if(opening){var d=new Date(),v=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');var a=document.getElementById('entryDutyExportStart'),b=document.getElementById('entryDutyExportEnd');if(a&&!a.value)a.value=v;if(b&&!b.value)b.value=v;}}">值班紀錄匯出</button>
         </div>
-        <div class="filters">
+<div class="detail hidden" id="entryPageExportPanel" style="margin:6px 0 10px auto;padding:10px 12px;width:min(440px,100%);box-sizing:border-box">
+          <div id="entryDutyExportOptions" style="margin-top:0">
+            <p class="hint" style="margin:0 0 10px">選擇起迄日期，再匯出該期間所有班別、組別的紀錄。</p>
+            <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+              <div><label for="entryDutyExportStart">起始日期</label><input id="entryDutyExportStart" type="date" required></div>
+              <div><label for="entryDutyExportEnd">結束日期</label><input id="entryDutyExportEnd" type="date" required></div>
+            </div>
+            <div class="actions" style="margin-top:10px"><button class="primary" id="entryPageExportDutyRecords" type="button">匯出 CSV</button><button class="secondary" id="cancelDutyExportOptions" type="button">取消</button></div>
+          </div>
+        </div>        <div class="filters">
           <div><label for="entryDateType">日期類型</label><select id="entryDateType"><option value="">請先選日期類型</option></select></div>
           <div><label for="entryShift">班別</label><select id="entryShift" disabled><option value="">請先選日期類型</option></select></div>
           <div><label for="entryGroup">組別</label><select id="entryGroup" disabled><option value="">請先選班別</option></select></div>
@@ -398,16 +407,7 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
         <div class="actions" id="entryActionRow">
           <button class="primary" id="confirmDutyEntry" type="button">確認班別與組別</button>
         </div>
-        <div class="detail hidden" id="entryPageExportPanel" style="margin-top:8px;padding:10px 12px">
-          <div id="entryDutyExportOptions" style="margin-top:0">
-            <p class="hint" style="margin:0 0 10px">選擇起迄日期，再匯出該期間所有班別、組別的紀錄。</p>
-            <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
-              <div><label for="entryDutyExportStart">起始日期</label><input id="entryDutyExportStart" type="date" required></div>
-              <div><label for="entryDutyExportEnd">結束日期</label><input id="entryDutyExportEnd" type="date" required></div>
-            </div>
-            <div class="actions" style="margin-top:10px"><button class="primary" id="entryPageExportDutyRecords" type="button">匯出 CSV</button><button class="secondary" id="cancelDutyExportOptions" type="button">取消</button></div>
-          </div>
-        </div><div id="entryRulePreview" class="detail hidden"></div>
+        <div id="entryRulePreview" class="detail hidden"></div>
         <div id="dutyAlertPanel" class="notice hidden" style="border-color:#e6b94f;background:#382e17;color:#ffecb2"></div>
         <div class="actions hidden" id="enterDutyRecordActions"><button class="primary" id="enterDutyRecord" type="button">進入值班紀錄</button><button class="secondary" id="changeDutyEntry" type="button">重新選擇</button></div>
         <section id="dutyRecordPlaceholder" class="detail hidden" style="margin-top:14px">
