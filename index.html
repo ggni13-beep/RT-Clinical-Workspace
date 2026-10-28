@@ -1400,68 +1400,103 @@ if($('cancelDutyExportOptions'))$('cancelDutyExportOptions').addEventListener('c
  if(panel)panel.classList.add('hidden');
  $('toggleDutyExportOptions').setAttribute('aria-expanded','false');
 });
-$('entryPageExportDutyRecords').addEventListener('click',()=>{
-   const startValue=$('entryDutyExportStart')?.value||'';
-   const endValue=$('entryDutyExportEnd')?.value||'';
-   if(!startValue||!endValue){alert('請先選擇起始日期與結束日期。');return;}
-   if(startValue>endValue){alert('起始日期不可晚於結束日期，請重新選擇。');return;}
-   const saved=loadDutyRecords().map(r=>({...r,recordStatus:'已確認儲存'}));
-   const drafts=getDutyDrafts().map(d=>{
-     const f=d.fields||{};
-     return {
-       id:d.id,recordStatus:'暫存待補',
-       dateType:f.entryDateType||'',shift:f.entryShift||'',group:f.entryGroup||'',
-       staff:f.recordStaff||'',employeeId:f.recordEmployeeId||'',
-       time:f.recordCallTime||'',type:f.recordType||'',problem:f.recordProblem||'',
-       detail:f.recordDetailProblem||'',otherProblem:f.recordOtherProblem||'',
-       inform:f.recordInform||'',informOther:f.recordInformOther||'',transfer:f.recordTransfer||'',
-       arrival:f.recordArrival||'',patientId:f.recordPatientId||'',unitBed:f.recordUnitBed||'',
-       details:f.recordDetails||'',inoSetting:f.inoSetting||'',inoNOConcentration:f.inoNOConcentration||'',
-       inoNO2Concentration:f.inoNO2Concentration||'',inoSpO2:f.inoSpO2||'',inoCylinderRemaining:f.inoCylinderRemaining||'',
-       inoBloodPressure:f.inoBloodPressure||'',inoHeartRate:f.inoHeartRate||'',inoMAP:f.inoMAP||'',
-       inoPEEP:f.inoPEEP||'',inoFIO2:f.inoFIO2||'',createdAt:d.createdAt||'',updatedAt:d.updatedAt||''
-     };
-   });
-   const from=new Date(startValue+'T00:00:00');
-   const to=new Date(endValue+'T00:00:00');to.setDate(to.getDate()+1);
-   const parseDate=r=>{
-     const candidates=[r.time,r.eventTime,r.recordCallTime,r.createdAt,r.updatedAt,
-       r.fields?.recordCallTime,r.fields?.createdAt,r.fields?.updatedAt];
-     for(const value of candidates){
-       if(!value)continue;
-       const d=new Date(value);
-       if(!Number.isNaN(d.getTime()))return d;
-     }
-     return null;
-   };
-   let rows=[...saved,...drafts].filter(r=>{const dt=parseDate(r);return dt&&dt>=from&&dt<to;});
-   rows=rows.map(r=>{
-     const dt=parseDate(r);
-     return {...r,
-       dateType:r.dateType||r.entryDateType||r.fields?.entryDateType||'',
-       shift:r.shift||r.entryShift||r.fields?.entryShift||'',
-       group:r.group||r.entryGroup||r.fields?.entryGroup||'',
-       staff:r.staff||r.recordStaff||r.fields?.recordStaff||'',
-       employeeId:r.employeeId||r.recordEmployeeId||r.fields?.recordEmployeeId||'',
-       time:r.time||r.eventTime||r.recordCallTime||r.fields?.recordCallTime||'',
-       type:r.type||r.recordType||r.fields?.recordType||'',
-       problem:r.problem||r.recordProblem||r.fields?.recordProblem||'',
-       unitBed:r.unitBed||r.recordUnitBed||r.fields?.recordUnitBed||'',
-       exportDate:dt?dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'):''
-     };
-   });
-   const shiftOrder={'白班':1,'小夜':2,'大夜':3};
-   rows.sort((a,b)=>a.exportDate.localeCompare(b.exportDate)||
-     ((shiftOrder[a.shift]||9)-(shiftOrder[b.shift]||9))||
-     String(a.group||'').localeCompare(String(b.group||''),'zh-Hant')||
-     String(a.time||'').localeCompare(String(b.time||'')));
-   if(!rows.length){alert('所選日期區間沒有找到可匯出的紀錄。系統依接聽／事件時間篩選；若暫存紀錄尚未填時間，則依建立／修改時間篩選。請確認日期範圍。');return;}
-   const keys=['exportDate','dateType','shift','group','recordStatus','time','staff','employeeId','id','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','inoSetting','inoNOConcentration','inoNO2Concentration','inoSpO2','inoCylinderRemaining','inoBloodPressure','inoHeartRate','inoMAP','inoPEEP','inoFIO2','createdAt','updatedAt'];
-   const headers=['事件日期','日期類型','班別','組別','紀錄狀態','接聽／事件時間','值班人員','員工編號','紀錄編號','處置類型','處理問題','問題／警報細項','其他問題補充','告知人員','其他告知人員','轉接給誰','是否到場處理','病歷號','單位床號','處理細節與補充說明','iNO設定','NO濃度','NO2濃度','血氧','鋼瓶餘量','血壓','心跳','MAP','PEEP','FIO2','建立時間','最後修改時間'];
-   const csv='\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_'+startValue+'_至_'+endValue+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
- });
+$('entryPageExportDutyRecords').addEventListener('click',()=>window.exportAllDutyRecordsCsv());
 }
+
+
+// Export all duty records stored by this RT Duty Log app, independent of the selected shift/group.
+window.exportAllDutyRecordsCsv = function(){
+  const startValue=document.getElementById('entryDutyExportStart')?.value||'';
+  const endValue=document.getElementById('entryDutyExportEnd')?.value||'';
+  if(!startValue||!endValue){alert('請先選擇起始日期與結束日期。');return;}
+  if(startValue>endValue){alert('起始日期不可晚於結束日期，請重新選擇。');return;}
+
+  const savedRaw=(()=>{try{return JSON.parse(localStorage.getItem('rtDutyRecordsV1')||'[]')}catch(e){return []}})();
+  const saved=(Array.isArray(savedRaw)?savedRaw:[]).map(r=>({...r,recordStatus:'已確認儲存'}));
+
+  // Include the app's pending drafts and any legacy duty-draft arrays saved under another key.
+  const draftArrays=[];
+  const knownDraftKeys=['rtDutyLogDraftsV2','rtDutyLogDraftsV1','rtDutyDraftsV1'];
+  for(const key of knownDraftKeys){
+    try{const v=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(v))draftArrays.push(...v.map(d=>({...d,_sourceDraftKey:key})));}catch(e){}
+  }
+  // Avoid duplicate draft IDs when multiple legacy keys happen to contain the same draft.
+  const seenDrafts=new Set();
+  const drafts=draftArrays.filter(d=>{
+    const k=String(d.id||JSON.stringify(d.fields||d));
+    if(seenDrafts.has(k))return false;seenDrafts.add(k);return true;
+  }).map(d=>{
+    const f=d.fields||d;
+    return {
+      ...f,id:d.id||f.id||'',recordStatus:'暫存待補',
+      dateType:f.entryDateType||f.dateType||'',shift:f.entryShift||f.shift||'',group:f.entryGroup||f.group||'',
+      staff:f.recordStaff||f.staff||'',employeeId:f.recordEmployeeId||f.employeeId||'',
+      time:f.recordCallTime||f.time||f.eventTime||'',type:f.recordType||f.type||'',
+      problem:f.recordProblem||f.problem||'',detail:f.recordDetailProblem||f.detail||'',
+      otherProblem:f.recordOtherProblem||f.otherProblem||'',inform:f.recordInform||f.inform||'',
+      informOther:f.recordInformOther||f.informOther||'',transfer:f.recordTransfer||f.transfer||'',
+      arrival:f.recordArrival||f.arrival||'',patientId:f.recordPatientId||f.patientId||'',
+      unitBed:f.recordUnitBed||f.unitBed||'',details:f.recordDetails||f.details||'',
+      inoSetting:f.inoSetting||'',inoNOConcentration:f.inoNOConcentration||'',
+      inoNO2Concentration:f.inoNO2Concentration||'',inoSpO2:f.inoSpO2||'',
+      inoCylinderRemaining:f.inoCylinderRemaining||'',inoBloodPressure:f.inoBloodPressure||'',
+      inoHeartRate:f.inoHeartRate||'',inoMAP:f.inoMAP||'',inoPEEP:f.inoPEEP||'',inoFIO2:f.inoFIO2||'',
+      createdAt:d.createdAt||f.createdAt||'',updatedAt:d.updatedAt||f.updatedAt||''
+    };
+  });
+
+  const from=new Date(startValue+'T00:00:00');
+  const to=new Date(endValue+'T00:00:00');to.setDate(to.getDate()+1);
+  const parseDate=r=>{
+    const fields=r.fields||{};
+    const candidates=[r.time,r.eventTime,r.recordCallTime,fields.recordCallTime,r.createdAt,r.updatedAt,fields.createdAt,fields.updatedAt];
+    for(const v of candidates){if(!v)continue;const d=new Date(v);if(!Number.isNaN(d.getTime()))return d;}
+    return null;
+  };
+  const rows=[...saved,...drafts].map(r=>{
+    const dt=parseDate(r);
+    return {...r,
+      dateType:r.dateType||r.entryDateType||r.fields?.entryDateType||'',
+      shift:r.shift||r.entryShift||r.fields?.entryShift||'',
+      group:r.group||r.entryGroup||r.fields?.entryGroup||'',
+      staff:r.staff||r.recordStaff||r.fields?.recordStaff||'',
+      employeeId:r.employeeId||r.recordEmployeeId||r.fields?.recordEmployeeId||'',
+      time:r.time||r.eventTime||r.recordCallTime||r.fields?.recordCallTime||'',
+      type:r.type||r.recordType||r.fields?.recordType||'',
+      problem:r.problem||r.recordProblem||r.fields?.recordProblem||'',
+      unitBed:r.unitBed||r.recordUnitBed||r.fields?.recordUnitBed||'',
+      exportDate:dt?dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'):''
+    };
+  }).filter(r=>r.exportDate && r.exportDate>=startValue && r.exportDate<=endValue);
+
+  rows.sort((a,b)=>a.exportDate.localeCompare(b.exportDate)||
+    String(a.shift||'').localeCompare(String(b.shift||''),'zh-Hant')||
+    String(a.group||'').localeCompare(String(b.group||''),'zh-Hant')||
+    String(a.time||'').localeCompare(String(b.time||'')));
+
+  if(!rows.length){
+    alert('此日期區間在目前瀏覽器保存的所有班別紀錄中沒有找到資料。請確認日期，或確認紀錄是否已儲存在這個網站／瀏覽器。');
+    return;
+  }
+  const columns=[
+    ['exportDate','事件日期'],['dateType','日期類型'],['shift','班別'],['group','組別'],['recordStatus','紀錄狀態'],
+    ['time','接聽／事件時間'],['staff','值班人員'],['employeeId','員工編號'],['id','紀錄編號'],
+    ['type','處置類型'],['problem','處理問題'],['detail','問題／警報細項'],['otherProblem','其他問題補充'],
+    ['inform','告知人員'],['informOther','其他告知人員'],['transfer','轉接給誰'],['arrival','是否到場處理'],
+    ['patientId','病歷號'],['unitBed','單位床號'],['details','處理細節與補充說明'],
+    ['inoSetting','iNO設定'],['inoNOConcentration','NO濃度'],['inoNO2Concentration','NO2濃度'],
+    ['inoSpO2','血氧'],['inoCylinderRemaining','鋼瓶餘量'],['inoBloodPressure','血壓'],
+    ['inoHeartRate','心跳'],['inoMAP','MAP'],['inoPEEP','PEEP'],['inoFIO2','FIO2'],
+    ['createdAt','建立時間'],['updatedAt','最後修改時間']
+  ];
+  const csv='\uFEFF'+[columns.map(c=>c[1]),...rows.map(r=>columns.map(c=>r[c[0]]??''))]
+    .map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='RT_Duty_Log_All_Shifts_'+startValue+'_至_'+endValue+'.csv';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  alert('已匯出 '+rows.length+' 筆紀錄（包含此瀏覽器保存的所有班別與組別，不限目前選取班別）。');
+};
 
 </script>
 </body>
