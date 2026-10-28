@@ -995,20 +995,38 @@ function updateResumeDutySessionPrompt(){
  if(label)label.textContent='上次班別：'+s.dateType+'｜'+s.shift+'｜'+s.group+'組'+(started?'；工作階段開始：'+new Date(started).toLocaleString('zh-TW'):'')+'。點選即可恢復並接續原本紀錄。';
 }
 function resumePreviousDutySession(){
- let s=null;try{s=JSON.parse(localStorage.getItem(dutySessionKey)||'null')}catch(e){}
- if(!s||!s.dateType||!s.shift||!s.group){alert('找不到可接續的值班工作階段，請重新選擇班別與組別。');return;}
+ let session=null;try{session=JSON.parse(localStorage.getItem(dutySessionKey)||'null')}catch(e){}
+ if(!session||!session.dateType||!session.shift||!session.group){
+   alert('找不到可接續的值班工作階段。請先選擇原本的日期類型、班別與組別。');return;
+ }
  const dateSel=$('entryDateType'),shiftSel=$('entryShift'),groupSel=$('entryGroup');
- if(!dateSel||!shiftSel||!groupSel)return;
- dateSel.value=s.dateType;
+ if(!dateSel||!shiftSel||!groupSel){alert('值班入口尚未載入，請重新整理頁面。');return;}
+ // Restore the original selection without requiring the current rule master to match.
+ dateSel.value=session.dateType;
  dateSel.dispatchEvent(new Event('change',{bubbles:true}));
- populateSelect(shiftSel,Object.keys(dutyEntryOptions[s.dateType]||{}),'請選擇班別');
- shiftSel.value=s.shift;
+ populateSelect(shiftSel,Object.keys(dutyEntryOptions[session.dateType]||{}),'請選擇班別');
+ if(!Array.from(shiftSel.options).some(o=>o.value===session.shift)){
+   shiftSel.add(new Option(session.shift,session.shift));
+ }
+ shiftSel.value=session.shift;
  shiftSel.dispatchEvent(new Event('change',{bubbles:true}));
- populateSelect(groupSel,(dutyEntryOptions[s.dateType]||{})[s.shift]||[],'請選擇組別');
- groupSel.value=s.group;
- confirmDutyEntry();
- if(!$('enterDutyRecordActions').classList.contains('hidden'))$('enterDutyRecord').click();
- else alert('已恢復上次班別，但目前規則未能完全符合。請檢查班別規則後再進入。');
+ populateSelect(groupSel,(dutyEntryOptions[session.dateType]||{})[session.shift]||[],'請選擇組別');
+ if(!Array.from(groupSel.options).some(o=>o.value===session.group)){
+   groupSel.add(new Option(session.group,session.group));
+ }
+ groupSel.value=session.group;
+ updateResumeDutySessionPrompt();
+ // Do not block continuation merely because a rule was edited/deactivated after the shift began.
+ const preview=$('entryRulePreview');
+ if(preview){
+   preview.classList.remove('hidden');
+   preview.innerHTML='<strong>已恢復原值班工作階段</strong><p>已接續「'+esc(session.dateType)+'｜'+esc(session.shift)+'｜'+esc(session.group)+'」。即使值班規則後續異動，仍可繼續原本紀錄。</p>';
+ }
+ $('enterDutyRecordActions')?.classList.remove('hidden');
+ $('dutyRecordPlaceholder')?.classList.add('hidden');
+ const enter=$('enterDutyRecord');
+ if(enter)enter.click();
+ else alert('已恢復班別資訊，但找不到值班紀錄表單入口。');
 }
 if($('resumeDutySessionBtn'))$('resumeDutySessionBtn').addEventListener('click',resumePreviousDutySession);
 function confirmDutyEntry(){
@@ -1406,15 +1424,38 @@ $('entryPageExportDutyRecords').addEventListener('click',()=>{
    });
    const from=new Date(startValue+'T00:00:00');
    const to=new Date(endValue+'T00:00:00');to.setDate(to.getDate()+1);
-   const parseDate=r=>{const v=r.time||r.createdAt||'';if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;};
+   const parseDate=r=>{
+     const candidates=[r.time,r.eventTime,r.recordCallTime,r.createdAt,r.updatedAt,
+       r.fields?.recordCallTime,r.fields?.createdAt,r.fields?.updatedAt];
+     for(const value of candidates){
+       if(!value)continue;
+       const d=new Date(value);
+       if(!Number.isNaN(d.getTime()))return d;
+     }
+     return null;
+   };
    let rows=[...saved,...drafts].filter(r=>{const dt=parseDate(r);return dt&&dt>=from&&dt<to;});
-   rows=rows.map(r=>{const dt=parseDate(r);return {...r,exportDate:dt?dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'):''};});
+   rows=rows.map(r=>{
+     const dt=parseDate(r);
+     return {...r,
+       dateType:r.dateType||r.entryDateType||r.fields?.entryDateType||'',
+       shift:r.shift||r.entryShift||r.fields?.entryShift||'',
+       group:r.group||r.entryGroup||r.fields?.entryGroup||'',
+       staff:r.staff||r.recordStaff||r.fields?.recordStaff||'',
+       employeeId:r.employeeId||r.recordEmployeeId||r.fields?.recordEmployeeId||'',
+       time:r.time||r.eventTime||r.recordCallTime||r.fields?.recordCallTime||'',
+       type:r.type||r.recordType||r.fields?.recordType||'',
+       problem:r.problem||r.recordProblem||r.fields?.recordProblem||'',
+       unitBed:r.unitBed||r.recordUnitBed||r.fields?.recordUnitBed||'',
+       exportDate:dt?dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'):''
+     };
+   });
    const shiftOrder={'白班':1,'小夜':2,'大夜':3};
    rows.sort((a,b)=>a.exportDate.localeCompare(b.exportDate)||
      ((shiftOrder[a.shift]||9)-(shiftOrder[b.shift]||9))||
      String(a.group||'').localeCompare(String(b.group||''),'zh-Hant')||
      String(a.time||'').localeCompare(String(b.time||'')));
-   if(!rows.length){alert('所選日期區間沒有可匯出的值班紀錄。');return;}
+   if(!rows.length){alert('所選日期區間沒有找到可匯出的紀錄。系統依接聽／事件時間篩選；若暫存紀錄尚未填時間，則依建立／修改時間篩選。請確認日期範圍。');return;}
    const keys=['exportDate','dateType','shift','group','recordStatus','time','staff','employeeId','id','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','inoSetting','inoNOConcentration','inoNO2Concentration','inoSpO2','inoCylinderRemaining','inoBloodPressure','inoHeartRate','inoMAP','inoPEEP','inoFIO2','createdAt','updatedAt'];
    const headers=['事件日期','日期類型','班別','組別','紀錄狀態','接聽／事件時間','值班人員','員工編號','紀錄編號','處置類型','處理問題','問題／警報細項','其他問題補充','告知人員','其他告知人員','轉接給誰','是否到場處理','病歷號','單位床號','處理細節與補充說明','iNO設定','NO濃度','NO2濃度','血氧','鋼瓶餘量','血壓','心跳','MAP','PEEP','FIO2','建立時間','最後修改時間'];
    const csv='\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
