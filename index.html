@@ -390,8 +390,25 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
           <div><label for="entryShift">班別</label><select id="entryShift" disabled><option value="">請先選日期類型</option></select></div>
           <div><label for="entryGroup">組別</label><select id="entryGroup" disabled><option value="">請先選班別</option></select></div>
         </div>
-        <div class="actions"><button class="primary" id="confirmDutyEntry" type="button">確認班別與組別</button></div>
-        <div id="entryRulePreview" class="detail hidden"></div>
+        <div id="resumeDutySessionPanel" class="notice hidden" style="border-color:#39c98a;background:#123b32;color:#d9ffed;margin:10px 0">
+          <strong>偵測到上次值班工作階段</strong>
+          <p id="resumeDutySessionText" style="margin:6px 0 10px">可接續原班別的值班紀錄，不必重新建立。</p>
+          <button class="primary" id="resumeDutySessionBtn" type="button">接續上次值班紀錄</button>
+        </div>
+        <div class="actions" id="entryActionRow" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <button class="primary" id="confirmDutyEntry" type="button">確認班別與組別</button>
+          <button class="secondary" id="toggleDutyExportOptions" type="button" aria-expanded="false" style="padding:10px 16px;font-size:14px;min-height:44px">值班紀錄匯出</button>
+        </div>
+        <div class="detail hidden" id="entryPageExportPanel" style="margin-top:8px;padding:10px 12px">
+          <div id="entryDutyExportOptions" style="margin-top:0">
+            <p class="hint" style="margin:0 0 10px">選擇起迄日期，再匯出該期間所有班別、組別的紀錄。</p>
+            <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+              <div><label for="entryDutyExportStart">起始日期</label><input id="entryDutyExportStart" type="date" required></div>
+              <div><label for="entryDutyExportEnd">結束日期</label><input id="entryDutyExportEnd" type="date" required></div>
+            </div>
+            <div class="actions" style="margin-top:10px"><button class="primary" id="entryPageExportDutyRecords" type="button">匯出 CSV</button><button class="secondary" id="cancelDutyExportOptions" type="button">取消</button></div>
+          </div>
+        </div><div id="entryRulePreview" class="detail hidden"></div>
         <div id="dutyAlertPanel" class="notice hidden" style="border-color:#e6b94f;background:#382e17;color:#ffecb2"></div>
         <div class="actions hidden" id="enterDutyRecordActions"><button class="primary" id="enterDutyRecord" type="button">進入值班紀錄</button><button class="secondary" id="changeDutyEntry" type="button">重新選擇</button></div>
         <section id="dutyRecordPlaceholder" class="detail hidden" style="margin-top:14px">
@@ -441,7 +458,18 @@ select:focus,input:focus{outline:2px solid #6ecbfa;outline-offset:1px}
           </form>
           <div class="workspace-head" style="margin-top:18px"><h3>值班紀錄</h3></div>
           
-          <div class="workspace-head" style="margin-top:12px"><button class="secondary" id="exportDutyRecords" type="button">匯出紀錄 CSV</button></div>
+          <div class="workspace-head" style="margin-top:12px;flex-wrap:wrap;gap:8px">
+            <label for="dutyExportPeriod">匯出範圍</label>
+            <select id="dutyExportPeriod" style="max-width:150px">
+              <option value="week">整周</option>
+              <option value="month">整月</option>
+              <option value="year">整年</option>
+              <option value="all">全部紀錄</option>
+            </select>
+            <label for="dutyExportDate">參考日期</label>
+            <input id="dutyExportDate" type="date" style="max-width:170px">
+            <button class="secondary" id="exportDutyRecords" type="button">匯出 CSV</button>
+          </div>
           <div id="dutySavedRecords"></div>
         </section>
       </div>
@@ -958,9 +986,41 @@ function initDutyEntryCascades(){
    }
  }catch(e){}
 }
+function updateResumeDutySessionPrompt(){
+ const panel=$('resumeDutySessionPanel'),label=$('resumeDutySessionText');
+ if(!panel)return;
+ let s=null;try{s=JSON.parse(localStorage.getItem(dutySessionKey)||'null')}catch(e){}
+ if(!s||!s.dateType||!s.shift||!s.group){panel.classList.add('hidden');return;}
+ const started=s.startedAt||s.savedAt;
+ panel.classList.remove('hidden');
+ if(label)label.textContent='上次班別：'+s.dateType+'｜'+s.shift+'｜'+s.group+'組'+(started?'；工作階段開始：'+new Date(started).toLocaleString('zh-TW'):'')+'。點選即可恢復並接續原本紀錄。';
+}
+function resumePreviousDutySession(){
+ let s=null;try{s=JSON.parse(localStorage.getItem(dutySessionKey)||'null')}catch(e){}
+ if(!s||!s.dateType||!s.shift||!s.group){alert('找不到可接續的值班工作階段，請重新選擇班別與組別。');return;}
+ const dateSel=$('entryDateType'),shiftSel=$('entryShift'),groupSel=$('entryGroup');
+ if(!dateSel||!shiftSel||!groupSel)return;
+ dateSel.value=s.dateType;
+ dateSel.dispatchEvent(new Event('change',{bubbles:true}));
+ populateSelect(shiftSel,Object.keys(dutyEntryOptions[s.dateType]||{}),'請選擇班別');
+ shiftSel.value=s.shift;
+ shiftSel.dispatchEvent(new Event('change',{bubbles:true}));
+ populateSelect(groupSel,(dutyEntryOptions[s.dateType]||{})[s.shift]||[],'請選擇組別');
+ groupSel.value=s.group;
+ confirmDutyEntry();
+ if(!$('enterDutyRecordActions').classList.contains('hidden'))$('enterDutyRecord').click();
+ else alert('已恢復上次班別，但目前規則未能完全符合。請檢查班別規則後再進入。');
+}
+if($('resumeDutySessionBtn'))$('resumeDutySessionBtn').addEventListener('click',resumePreviousDutySession);
 function confirmDutyEntry(){
  const dt=$('entryDateType').value, sh=$('entryShift').value, gr=$('entryGroup').value;
- try{localStorage.setItem(dutySessionKey,JSON.stringify({dateType:dt,shift:sh,group:gr,savedAt:new Date().toISOString()}));}catch(e){}
+ try{
+   const prior=JSON.parse(localStorage.getItem(dutySessionKey)||'null');
+   const same=prior&&prior.dateType===dt&&prior.shift===sh&&prior.group===gr;
+   const now=new Date().toISOString();
+   localStorage.setItem(dutySessionKey,JSON.stringify({dateType:dt,shift:sh,group:gr,active:true,startedAt:same?(prior.startedAt||prior.savedAt||now):now,savedAt:now}));
+ }catch(e){}
+ updateResumeDutySessionPrompt();
  const dateAliases = dt==='週日（國定／颱風）'
    ? (sh==='白班' ? ['週日'] : sh==='小夜' ? ['週日（國定假日）','週日'] : ['假日','週日（國定假日）','週日'])
    : [dt];
@@ -1071,7 +1131,9 @@ $('exportDutyRules').addEventListener('click',()=>{
 });
 
 
-if(document.getElementById('entryDateType')) initDutyEntryCascades();
+if(document.getElementById('entryDateType')){initDutyEntryCascades();updateResumeDutySessionPrompt();}
+ if($('dutyExportDate')&&!$('dutyExportDate').value)$('dutyExportDate').value=new Date().toISOString().slice(0,10);
+ if($('entryDutyExportDate')&&!$('entryDutyExportDate').value)$('entryDutyExportDate').value=new Date().toISOString().slice(0,10);
 
 
 // Stage 2: REDCap-style Duty Log form prototype (local browser storage only).
@@ -1260,15 +1322,97 @@ function initDutyRecordForm(){
        inform:f.recordInform||'',informOther:f.recordInformOther||'',
        transfer:f.recordTransfer||'',arrival:f.recordArrival||'',
        patientId:f.recordPatientId||'',unitBed:f.recordUnitBed||'',
-       details:f.recordDetails||'',createdAt:d.createdAt||'',updatedAt:d.updatedAt||''
+       details:f.recordDetails||'',inoSetting:f.inoSetting||'',inoNOConcentration:f.inoNOConcentration||'',
+       inoNO2Concentration:f.inoNO2Concentration||'',inoSpO2:f.inoSpO2||'',inoCylinderRemaining:f.inoCylinderRemaining||'',
+       inoBloodPressure:f.inoBloodPressure||'',inoHeartRate:f.inoHeartRate||'',inoMAP:f.inoMAP||'',
+       inoPEEP:f.inoPEEP||'',inoFIO2:f.inoFIO2||'',createdAt:d.createdAt||'',updatedAt:d.updatedAt||''
      };
    });
-   const rows=[...saved,...drafts].sort((a,b)=>String(a.time||a.createdAt||'').localeCompare(String(b.time||b.createdAt||'')));
-   if(!rows.length){alert('目前沒有可匯出的值班紀錄（包含已確認儲存與暫存紀錄）。');return;}
-   const keys=['id','recordStatus','time','dateType','shift','group','staff','employeeId','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','inoSetting','inoNOConcentration','inoNO2Concentration','inoSpO2','inoCylinderRemaining','inoBloodPressure','inoHeartRate','inoMAP','inoPEEP','inoFIO2','createdAt','updatedAt'];
-   const headers=['紀錄編號','紀錄狀態','接聽／事件時間','日期類型','班別','組別','值班人員','員工編號','值班處置類型','處理問題','問題／警報細項','其他問題補充','告知人員','其他告知人員','轉接給誰','是否到場處理','病歷號','單位床號','處理細節與補充說明','iNO設定','NO濃度','NO2濃度','血氧','鋼瓶餘量','血壓','心跳','MAP','PEEP','FIO2','建立時間','最後修改時間'];
+   const period=$('dutyExportPeriod')?.value||'all';
+   const dateValue=$('dutyExportDate')?.value||new Date().toISOString().slice(0,10);
+   const anchor=new Date(dateValue+'T12:00:00');
+   if(Number.isNaN(anchor.getTime())){alert('請選擇有效的參考日期。');return;}
+   let from=null,to=null,periodLabel='全部紀錄';
+   if(period==='week'){
+     from=new Date(anchor);const day=(from.getDay()+6)%7;from.setDate(from.getDate()-day);from.setHours(0,0,0,0);
+     to=new Date(from);to.setDate(to.getDate()+7);periodLabel='整周_'+from.toISOString().slice(0,10)+'_'+new Date(to.getTime()-86400000).toISOString().slice(0,10);
+   }else if(period==='month'){
+     from=new Date(anchor.getFullYear(),anchor.getMonth(),1);to=new Date(anchor.getFullYear(),anchor.getMonth()+1,1);
+     periodLabel='整月_'+anchor.getFullYear()+'-'+String(anchor.getMonth()+1).padStart(2,'0');
+   }else if(period==='year'){
+     from=new Date(anchor.getFullYear(),0,1);to=new Date(anchor.getFullYear()+1,0,1);periodLabel='整年_'+anchor.getFullYear();
+   }
+   const parseDate=r=>{const v=r.time||r.createdAt||'';if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;};
+   let rows=[...saved,...drafts].map(r=>{
+     const dt=parseDate(r);
+     return {...r,exportDate:dt?dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'):'未記錄日期'};
+   });
+   if(from&&to){
+     rows=rows.filter(r=>{const dt=parseDate(r);return dt&&dt>=from&&dt<to;});
+   }
+   const shiftOrder={'白班':1,'小夜':2,'大夜':3};
+   rows.sort((a,b)=>(a.exportDate.localeCompare(b.exportDate))||
+     ((shiftOrder[a.shift]||9)-(shiftOrder[b.shift]||9))||
+     String(a.group||'').localeCompare(String(b.group||''),'zh-Hant')||
+     String(a.time||'').localeCompare(String(b.time||'')));
+   if(!rows.length){alert('所選匯出範圍沒有紀錄。請更改參考日期或選擇「全部紀錄」。');return;}
+   const keys=['exportDate','dateType','shift','group','recordStatus','time','staff','employeeId','id','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','inoSetting','inoNOConcentration','inoNO2Concentration','inoSpO2','inoCylinderRemaining','inoBloodPressure','inoHeartRate','inoMAP','inoPEEP','inoFIO2','createdAt','updatedAt'];
+   const headers=['事件日期（日期統整）','日期類型','班別（班別統整）','組別','紀錄狀態','接聽／事件時間','值班人員','員工編號','紀錄編號','處置類型','處理問題','問題／警報細項','其他問題補充','告知人員','其他告知人員','轉接給誰','是否到場處理','病歷號','單位床號','處理細節與補充說明','iNO設定','NO濃度','NO2濃度','血氧','鋼瓶餘量','血壓','心跳','MAP','PEEP','FIO2','建立時間','最後修改時間'];
    const csv='\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_All_Shifts_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(a.href);
+   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_'+periodLabel+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ });
+ if($('toggleDutyExportOptions'))$('toggleDutyExportOptions').addEventListener('click',()=>{
+ const panel=$('entryPageExportPanel'),btn=$('toggleDutyExportOptions');
+ if(!panel){alert('匯出選項尚未載入，請重新整理頁面後再試。');return;}
+ const opening=panel.classList.contains('hidden');
+ panel.classList.toggle('hidden',!opening);btn.setAttribute('aria-expanded',String(opening));
+ if(opening){
+   const today=new Date().toISOString().slice(0,10);
+   if($('entryDutyExportEnd')&&!$('entryDutyExportEnd').value)$('entryDutyExportEnd').value=today;
+   if($('entryDutyExportStart')&&!$('entryDutyExportStart').value)$('entryDutyExportStart').value=today;
+   panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+ }
+});
+if($('cancelDutyExportOptions'))$('cancelDutyExportOptions').addEventListener('click',()=>{
+ $('entryDutyExportOptions').classList.add('hidden');$('toggleDutyExportOptions').setAttribute('aria-expanded','false');
+});
+$('entryPageExportDutyRecords').addEventListener('click',()=>{
+   const startValue=$('entryDutyExportStart')?.value||'';
+   const endValue=$('entryDutyExportEnd')?.value||'';
+   if(!startValue||!endValue){alert('請先選擇起始日期與結束日期。');return;}
+   if(startValue>endValue){alert('起始日期不可晚於結束日期，請重新選擇。');return;}
+   const saved=loadDutyRecords().map(r=>({...r,recordStatus:'已確認儲存'}));
+   const drafts=getDutyDrafts().map(d=>{
+     const f=d.fields||{};
+     return {
+       id:d.id,recordStatus:'暫存待補',
+       dateType:f.entryDateType||'',shift:f.entryShift||'',group:f.entryGroup||'',
+       staff:f.recordStaff||'',employeeId:f.recordEmployeeId||'',
+       time:f.recordCallTime||'',type:f.recordType||'',problem:f.recordProblem||'',
+       detail:f.recordDetailProblem||'',otherProblem:f.recordOtherProblem||'',
+       inform:f.recordInform||'',informOther:f.recordInformOther||'',transfer:f.recordTransfer||'',
+       arrival:f.recordArrival||'',patientId:f.recordPatientId||'',unitBed:f.recordUnitBed||'',
+       details:f.recordDetails||'',inoSetting:f.inoSetting||'',inoNOConcentration:f.inoNOConcentration||'',
+       inoNO2Concentration:f.inoNO2Concentration||'',inoSpO2:f.inoSpO2||'',inoCylinderRemaining:f.inoCylinderRemaining||'',
+       inoBloodPressure:f.inoBloodPressure||'',inoHeartRate:f.inoHeartRate||'',inoMAP:f.inoMAP||'',
+       inoPEEP:f.inoPEEP||'',inoFIO2:f.inoFIO2||'',createdAt:d.createdAt||'',updatedAt:d.updatedAt||''
+     };
+   });
+   const from=new Date(startValue+'T00:00:00');
+   const to=new Date(endValue+'T00:00:00');to.setDate(to.getDate()+1);
+   const parseDate=r=>{const v=r.time||r.createdAt||'';if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;};
+   let rows=[...saved,...drafts].filter(r=>{const dt=parseDate(r);return dt&&dt>=from&&dt<to;});
+   rows=rows.map(r=>{const dt=parseDate(r);return {...r,exportDate:dt?dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'):''};});
+   const shiftOrder={'白班':1,'小夜':2,'大夜':3};
+   rows.sort((a,b)=>a.exportDate.localeCompare(b.exportDate)||
+     ((shiftOrder[a.shift]||9)-(shiftOrder[b.shift]||9))||
+     String(a.group||'').localeCompare(String(b.group||''),'zh-Hant')||
+     String(a.time||'').localeCompare(String(b.time||'')));
+   if(!rows.length){alert('所選日期區間沒有可匯出的值班紀錄。');return;}
+   const keys=['exportDate','dateType','shift','group','recordStatus','time','staff','employeeId','id','type','problem','detail','otherProblem','inform','informOther','transfer','arrival','patientId','unitBed','details','inoSetting','inoNOConcentration','inoNO2Concentration','inoSpO2','inoCylinderRemaining','inoBloodPressure','inoHeartRate','inoMAP','inoPEEP','inoFIO2','createdAt','updatedAt'];
+   const headers=['事件日期','日期類型','班別','組別','紀錄狀態','接聽／事件時間','值班人員','員工編號','紀錄編號','處置類型','處理問題','問題／警報細項','其他問題補充','告知人員','其他告知人員','轉接給誰','是否到場處理','病歷號','單位床號','處理細節與補充說明','iNO設定','NO濃度','NO2濃度','血氧','鋼瓶餘量','血壓','心跳','MAP','PEEP','FIO2','建立時間','最後修改時間'];
+   const csv='\uFEFF'+[headers,...rows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='RT_Duty_Log_'+startValue+'_至_'+endValue+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
  });
 }
 
